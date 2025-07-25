@@ -1,39 +1,22 @@
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.ServerSocket;
-import java.net.Socket;
 
 public class Main {
     public static final int PORT = 6379;
 
     public static void main(String[] args) {
-        Socket clientSocket = null;
+        final var threadFactory = Thread.ofVirtual().factory();
 
         try (final var serverSocket = new ServerSocket(PORT)) {
             serverSocket.setReuseAddress(true);
-            clientSocket = serverSocket.accept();
-            var reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            var outputStream = clientSocket.getOutputStream();
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if ("PING".equalsIgnoreCase(line)) {
-                    outputStream.write("+PONG\r\n".getBytes());
-                }
+            while (true) {
+                final var client = serverSocket.accept();
+                final var thread = threadFactory.newThread(new Client(client));
+                thread.start();
             }
-
-            outputStream.flush();
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
-        } finally {
-            try {
-                if (clientSocket != null) {
-                    clientSocket.close();
-                }
-            } catch (IOException e) {
-                System.out.println("IOException: " + e.getMessage());
-            }
         }
     }
 }
