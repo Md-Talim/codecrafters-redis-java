@@ -1,5 +1,6 @@
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -12,9 +13,16 @@ public class Main {
         try (final var serverSocket = new ServerSocket(PORT)) {
             serverSocket.setReuseAddress(true);
             clientSocket = serverSocket.accept();
+            var reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            var outputStream = clientSocket.getOutputStream();
 
-            OutputStream outputStream = clientSocket.getOutputStream();
-            outputStream.write("+PONG\r\n".getBytes());
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if ("PING".equalsIgnoreCase(line)) {
+                    outputStream.write("+PONG\r\n".getBytes());
+                }
+            }
+
             outputStream.flush();
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
