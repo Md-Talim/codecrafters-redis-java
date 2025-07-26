@@ -4,10 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import redis.command.Command;
+import redis.command.ConfigCommand;
 import redis.command.EchoCommand;
 import redis.command.GetCommand;
 import redis.command.PingCommand;
 import redis.command.SetCommand;
+import redis.configuration.Configuration;
 import redis.store.Storage;
 import redis.type.RArray;
 import redis.type.RValue;
@@ -15,15 +17,17 @@ import redis.type.RValue;
 public class Evaluator {
     private final Map<String, Command> commands = new HashMap<>();
 
-    public Evaluator(Storage storage) {
+    public Evaluator(Storage storage, Configuration configuration) {
         Command pingCommand = new PingCommand();
         Command echoCommand = new EchoCommand();
         Command setCommand = new SetCommand(storage);
         Command getCommand = new GetCommand(storage);
+        Command configCommand = new ConfigCommand(configuration);
         commands.put(pingCommand.getName(), pingCommand);
         commands.put(echoCommand.getName(), echoCommand);
         commands.put(setCommand.getName(), setCommand);
         commands.put(getCommand.getName(), getCommand);
+        commands.put(configCommand.getName(), configCommand);
     }
 
     public RValue evaluate(RValue command) {

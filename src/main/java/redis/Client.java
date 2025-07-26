@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import redis.configuration.Configuration;
 import redis.serial.Deserializer;
 import redis.store.Storage;
 import redis.type.RValue;
@@ -15,27 +16,27 @@ public class Client implements Runnable {
     private final int id;
     private final Socket socket;
     private final Storage storage;
-    private final BufferedInputStream inputStream;
-    private final BufferedOutputStream outputStream;
+    private final Configuration configuration;
 
-    Client(Socket socket, Storage storage) throws IOException {
+    Client(Socket socket, Storage storage, Configuration configuration) throws IOException {
+        this.id = ID_INTEGER.incrementAndGet();
         this.socket = socket;
         this.storage = storage;
-        this.id = ID_INTEGER.incrementAndGet();
-        this.inputStream = new BufferedInputStream(socket.getInputStream());
-        this.outputStream = new BufferedOutputStream(socket.getOutputStream());
+        this.configuration = configuration;
     }
 
     @Override
     public void run() {
         System.out.println("%d: connected".formatted(id));
 
-        final var deserializer = new Deserializer(inputStream);
-
         try (socket) {
+            final var inputStream = new BufferedInputStream(socket.getInputStream());
+            final var outputStream = new BufferedOutputStream(socket.getOutputStream());
+            final var deserializer = new Deserializer(inputStream);
+
             RValue command;
             while ((command = deserializer.read()) != null) {
-                var evaluator = new Evaluator(storage);
+                var evaluator = new Evaluator(storage, configuration);
                 var response = evaluator.evaluate(command);
 
                 if (response != null) {
