@@ -20,7 +20,6 @@ public class Evaluator {
     }
 
     public RValue evaluate(RValue command) {
-        System.out.println("ENTERED HERE in evaluate");
         if (command instanceof RArray) {
             return evaluateArray((RArray) command);
         }
@@ -29,7 +28,6 @@ public class Evaluator {
     }
 
     private RValue evaluateArray(RArray array) {
-        System.out.println("ENTERED HERE in evaluate Array");
         if (array.isEmpty()) {
             return null;
         }

@@ -30,10 +30,8 @@ public class Client implements Runnable {
         final var deserializer = new Deserializer(inputStream);
 
         try (socket) {
-            System.out.println("ENTERED HERE in try");
             RValue command;
             while ((command = deserializer.read()) != null) {
-                System.out.println("ENTERED HERE in loop");
                 var evaluator = new Evaluator();
                 var response = evaluator.evaluate(command);
 
