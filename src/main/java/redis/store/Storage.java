@@ -16,6 +16,10 @@ public class Storage {
         map.put(key, Expiry.in(value, milliseconds));
     }
 
+    public void put(String key, Expiry<Object> value) {
+        map.put(key, value);
+    }
+
     public Object get(String key) {
         var expiry = map.computeIfPresent(key, (_, value) -> {
             if (value.isExpired()) {

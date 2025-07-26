@@ -2,8 +2,12 @@ package redis;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import redis.configuration.Configuration;
+import redis.configuration.Property;
+import redis.rdb.RDBLoader;
 import redis.store.Storage;
 
 public class Main {
@@ -23,6 +27,15 @@ public class Main {
                 System.err.println("unknown property: %s".formatted(key));
             } else {
                 property.set(value);
+            }
+        }
+
+        Property directory = configuration.directory();
+        Property dbFilename = configuration.dbFilename();
+        if (directory.isSet() && dbFilename.isSet()) {
+            var path = Paths.get(directory.value(), dbFilename.value());
+            if (Files.exists(path)) {
+                RDBLoader.load(path, storage);
             }
         }
 

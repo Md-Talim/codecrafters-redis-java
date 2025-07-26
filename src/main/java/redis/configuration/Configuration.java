@@ -17,4 +17,12 @@ public class Configuration {
         }
         return null;
     }
+
+    public Property directory() {
+        return directory;
+    }
+
+    public Property dbFilename() {
+        return databaseFilename;
+    }
 }

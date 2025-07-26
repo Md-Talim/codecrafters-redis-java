@@ -19,4 +19,8 @@ public class Property {
     public void set(String value) {
         this.value = value;
     }
+
+    public boolean isSet() {
+        return value != null;
+    }
 }
