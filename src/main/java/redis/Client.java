@@ -13,11 +13,13 @@ public class Client implements Runnable {
     private static final AtomicInteger ID_INTEGER = new AtomicInteger();
     private final int id;
     private final Socket socket;
+    private final Storage storage;
     private final BufferedInputStream inputStream;
     private final BufferedOutputStream outputStream;
 
-    Client(Socket socket) throws IOException {
+    Client(Socket socket, Storage storage) throws IOException {
         this.socket = socket;
+        this.storage = storage;
         this.id = ID_INTEGER.incrementAndGet();
         this.inputStream = new BufferedInputStream(socket.getInputStream());
         this.outputStream = new BufferedOutputStream(socket.getOutputStream());
@@ -32,7 +34,7 @@ public class Client implements Runnable {
         try (socket) {
             RValue command;
             while ((command = deserializer.read()) != null) {
-                var evaluator = new Evaluator();
+                var evaluator = new Evaluator(storage);
                 var response = evaluator.evaluate(command);
 
                 if (response != null) {

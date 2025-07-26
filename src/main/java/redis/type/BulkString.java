@@ -14,6 +14,11 @@ public class BulkString implements RValue {
     }
 
     @Override
+    public String toString() {
+        return value;
+    }
+
+    @Override
     public byte[] serialize() {
         byte[] valueBytes = value.getBytes();
         String header = FirstByte.BulkString + Integer.toString(valueBytes.length) + CRLF;

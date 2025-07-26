@@ -8,13 +8,15 @@ public class Main {
 
     public static void main(String[] args) {
         final var threadFactory = Thread.ofVirtual().factory();
+        final var storage = new Storage();
 
         try (final var serverSocket = new ServerSocket(PORT)) {
             serverSocket.setReuseAddress(true);
 
             while (true) {
-                final var client = serverSocket.accept();
-                final var thread = threadFactory.newThread(new Client(client));
+                final var socket = serverSocket.accept();
+                final var client = new Client(socket, storage);
+                final var thread = threadFactory.newThread(client);
                 thread.start();
             }
         } catch (IOException e) {

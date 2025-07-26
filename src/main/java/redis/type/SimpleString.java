@@ -12,6 +12,11 @@ public class SimpleString implements RValue {
     }
 
     @Override
+    public String toString() {
+        return value;
+    }
+
+    @Override
     public byte[] serialize() {
         return (FirstByte.SimpleString + value + CRLF).getBytes();
     }
