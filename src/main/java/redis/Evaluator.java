@@ -7,6 +7,7 @@ import redis.command.Command;
 import redis.command.ConfigCommand;
 import redis.command.EchoCommand;
 import redis.command.GetCommand;
+import redis.command.KeysCommand;
 import redis.command.PingCommand;
 import redis.command.SetCommand;
 import redis.configuration.Configuration;
@@ -23,11 +24,13 @@ public class Evaluator {
         Command setCommand = new SetCommand(storage);
         Command getCommand = new GetCommand(storage);
         Command configCommand = new ConfigCommand(configuration);
+        Command keysCommand = new KeysCommand(storage);
         commands.put(pingCommand.getName(), pingCommand);
         commands.put(echoCommand.getName(), echoCommand);
         commands.put(setCommand.getName(), setCommand);
         commands.put(getCommand.getName(), getCommand);
         commands.put(configCommand.getName(), configCommand);
+        commands.put(keysCommand.getName(), keysCommand);
     }
 
     public RValue evaluate(RValue command) {
