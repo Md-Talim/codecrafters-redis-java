@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import redis.command.Command;
+import redis.command.EchoCommand;
 import redis.command.PingCommand;
 import redis.type.RArray;
 import redis.type.RValue;
@@ -13,7 +14,9 @@ public class Evaluator {
 
     public Evaluator() {
         Command pingCommand = new PingCommand();
+        Command echoCommand = new EchoCommand();
         commands.put(pingCommand.getName(), pingCommand);
+        commands.put(echoCommand.getName(), echoCommand);
     }
 
     public RValue evaluate(RValue command) {
