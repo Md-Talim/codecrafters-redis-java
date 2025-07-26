@@ -1,35 +1,46 @@
 package redis;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import redis.serial.Deserializer;
+import redis.type.RValue;
+
 public class Client implements Runnable {
     private static final AtomicInteger ID_INTEGER = new AtomicInteger();
-    private final int id = ID_INTEGER.incrementAndGet();
+    private final int id;
     private final Socket socket;
+    private final BufferedInputStream inputStream;
+    private final BufferedOutputStream outputStream;
 
-    Client(Socket socket) {
+    Client(Socket socket) throws IOException {
         this.socket = socket;
+        this.id = ID_INTEGER.incrementAndGet();
+        this.inputStream = new BufferedInputStream(socket.getInputStream());
+        this.outputStream = new BufferedOutputStream(socket.getOutputStream());
     }
 
     @Override
     public void run() {
         System.out.println("%d: connected".formatted(id));
 
+        final var deserializer = new Deserializer(inputStream);
+
         try (socket) {
-            var reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            var outputStream = socket.getOutputStream();
+            System.out.println("ENTERED HERE in try");
+            RValue command;
+            while ((command = deserializer.read()) != null) {
+                System.out.println("ENTERED HERE in loop");
+                var evaluator = new Evaluator();
+                var response = evaluator.evaluate(command);
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if ("PING".equalsIgnoreCase(line)) {
-                    outputStream.write("+PONG\r\n".getBytes());
+                if (response != null) {
+                    outputStream.write(response.serialize());
+                    outputStream.flush();
                 }
-
-                outputStream.flush();
             }
 
             socket.close();
