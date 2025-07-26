@@ -8,6 +8,7 @@ import redis.command.EchoCommand;
 import redis.command.GetCommand;
 import redis.command.PingCommand;
 import redis.command.SetCommand;
+import redis.store.Storage;
 import redis.type.RArray;
 import redis.type.RValue;
 

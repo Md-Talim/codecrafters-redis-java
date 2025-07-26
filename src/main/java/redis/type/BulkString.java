@@ -20,6 +20,10 @@ public class BulkString implements RValue {
 
     @Override
     public byte[] serialize() {
+        if (value == null) {
+            return nullBulkString();
+        }
+
         byte[] valueBytes = value.getBytes();
         String header = FirstByte.BulkString + Integer.toString(valueBytes.length) + CRLF;
         byte[] headerBytes = header.getBytes();
@@ -33,5 +37,9 @@ public class BulkString implements RValue {
             throw new RuntimeException(e);
         }
         return out.toByteArray();
+    }
+
+    private byte[] nullBulkString() {
+        return (FirstByte.BulkString + "-1" + CRLF).getBytes();
     }
 }

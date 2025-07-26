@@ -2,7 +2,7 @@ package redis.command;
 
 import java.util.List;
 
-import redis.Storage;
+import redis.store.Storage;
 import redis.type.BulkString;
 import redis.type.RValue;
 import redis.type.SimpleError;
@@ -23,7 +23,7 @@ public class GetCommand implements Command {
         String key = args.get(0).toString();
         Object value = storage.get(key);
 
-        return new BulkString(value.toString());
+        return new BulkString(value == null ? null : value.toString());
     }
 
     @Override
