@@ -11,10 +11,11 @@ import redis.command.KeysCommand;
 import redis.command.PingCommand;
 import redis.command.SetCommand;
 import redis.command.TypeCommand;
+import redis.command.stream.XAddCommand;
 import redis.configuration.Configuration;
+import redis.resp.type.RArray;
+import redis.resp.type.RValue;
 import redis.store.Storage;
-import redis.type.RArray;
-import redis.type.RValue;
 
 public class Evaluator {
     private final Map<String, Command> commands = new HashMap<>();
@@ -27,6 +28,7 @@ public class Evaluator {
         Command configCommand = new ConfigCommand(configuration);
         Command keysCommand = new KeysCommand(storage);
         Command typeCommand = new TypeCommand(storage);
+        Command xAddCommand = new XAddCommand(storage);
         commands.put(pingCommand.getName(), pingCommand);
         commands.put(echoCommand.getName(), echoCommand);
         commands.put(setCommand.getName(), setCommand);
@@ -34,6 +36,7 @@ public class Evaluator {
         commands.put(configCommand.getName(), configCommand);
         commands.put(keysCommand.getName(), keysCommand);
         commands.put(typeCommand.getName(), typeCommand);
+        commands.put(xAddCommand.getName(), xAddCommand);
     }
 
     public RValue evaluate(RValue command) {

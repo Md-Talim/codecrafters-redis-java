@@ -13,6 +13,14 @@ public record Expiry<T>(T value, long until) {
         return new Expiry<T>(value, -1);
     }
 
+    public boolean isType(Class<?> type) {
+        if (value == null) {
+            return false;
+        }
+
+        return value.getClass().equals(type);
+    }
+
     public static <T> Expiry<T> in(T value, long milliseconds) {
         long until = System.currentTimeMillis() + milliseconds;
         return new Expiry<T>(value, until);
