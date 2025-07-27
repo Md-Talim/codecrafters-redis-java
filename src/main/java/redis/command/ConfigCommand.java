@@ -5,10 +5,10 @@ import java.util.Collections;
 import java.util.List;
 
 import redis.configuration.Configuration;
-import redis.type.BulkString;
-import redis.type.RArray;
-import redis.type.RValue;
-import redis.type.SimpleError;
+import redis.resp.type.BulkString;
+import redis.resp.type.RArray;
+import redis.resp.type.RValue;
+import redis.resp.type.SimpleError;
 
 public class ConfigCommand implements Command {
     private final Configuration configuration;

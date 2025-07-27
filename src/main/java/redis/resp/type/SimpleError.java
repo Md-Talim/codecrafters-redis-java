@@ -1,4 +1,4 @@
-package redis.type;
+package redis.resp.type;
 
 public class SimpleError implements RValue {
     private final String message;

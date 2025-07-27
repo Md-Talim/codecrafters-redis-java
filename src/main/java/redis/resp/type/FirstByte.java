@@ -1,4 +1,4 @@
-package redis.type;
+package redis.resp.type;
 
 /**
  * Centralizes RESP protocol first byte markers for various types.

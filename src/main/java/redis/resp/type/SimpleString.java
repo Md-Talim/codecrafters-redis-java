@@ -1,4 +1,4 @@
-package redis.type;
+package redis.resp.type;
 
 public class SimpleString implements RValue {
     private final String value;

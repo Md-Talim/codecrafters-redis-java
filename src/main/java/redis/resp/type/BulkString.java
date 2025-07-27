@@ -1,4 +1,4 @@
-package redis.type;
+package redis.resp.type;
 
 import java.io.ByteArrayOutputStream;
 

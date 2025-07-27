@@ -2,8 +2,8 @@ package redis.command;
 
 import java.util.List;
 
-import redis.type.BulkString;
-import redis.type.RValue;
+import redis.resp.type.BulkString;
+import redis.resp.type.RValue;
 
 public class EchoCommand implements Command {
 

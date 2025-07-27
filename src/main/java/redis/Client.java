@@ -7,9 +7,9 @@ import java.net.Socket;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import redis.configuration.Configuration;
-import redis.serial.Deserializer;
+import redis.resp.Deserializer;
+import redis.resp.type.RValue;
 import redis.store.Storage;
-import redis.type.RValue;
 
 public class Client implements Runnable {
     private static final AtomicInteger ID_INTEGER = new AtomicInteger();

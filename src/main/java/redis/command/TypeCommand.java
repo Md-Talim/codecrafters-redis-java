@@ -2,11 +2,12 @@ package redis.command;
 
 import java.util.List;
 
+import redis.resp.type.BulkString;
+import redis.resp.type.RValue;
+import redis.resp.type.SimpleError;
+import redis.resp.type.SimpleString;
 import redis.store.Storage;
-import redis.type.BulkString;
-import redis.type.RValue;
-import redis.type.SimpleError;
-import redis.type.SimpleString;
+import redis.stream.Stream;
 
 public class TypeCommand implements Command {
     private final Storage storage;
@@ -24,6 +25,9 @@ public class TypeCommand implements Command {
         Object value = storage.get(args.get(0).toString());
         if (value instanceof BulkString) {
             return new SimpleString("string");
+        }
+        if (value instanceof Stream) {
+            return new SimpleString("stream");
         }
 
         return new SimpleString("none");

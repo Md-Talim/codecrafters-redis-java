@@ -1,15 +1,15 @@
-package redis.serial;
+package redis.resp;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import redis.type.BulkString;
-import redis.type.FirstByte;
-import redis.type.RArray;
-import redis.type.RValue;
-import redis.type.SimpleString;
+import redis.resp.type.BulkString;
+import redis.resp.type.FirstByte;
+import redis.resp.type.RArray;
+import redis.resp.type.RValue;
+import redis.resp.type.SimpleString;
 
 public class Deserializer {
     private final InputStream inputStream;

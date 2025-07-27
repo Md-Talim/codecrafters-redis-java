@@ -2,10 +2,10 @@ package redis.command;
 
 import java.util.List;
 
+import redis.resp.type.RValue;
+import redis.resp.type.SimpleError;
+import redis.resp.type.SimpleString;
 import redis.store.Storage;
-import redis.type.RValue;
-import redis.type.SimpleError;
-import redis.type.SimpleString;
 
 public class SetCommand implements Command {
     private final Storage storage;

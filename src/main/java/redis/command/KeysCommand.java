@@ -3,11 +3,11 @@ package redis.command;
 import java.util.ArrayList;
 import java.util.List;
 
+import redis.resp.type.BulkString;
+import redis.resp.type.RArray;
+import redis.resp.type.RValue;
+import redis.resp.type.SimpleError;
 import redis.store.Storage;
-import redis.type.BulkString;
-import redis.type.RArray;
-import redis.type.RValue;
-import redis.type.SimpleError;
 
 public class KeysCommand implements Command {
     private final Storage storage;
