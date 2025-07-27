@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import redis.command.Command;
 import redis.resp.type.BulkString;
 import redis.resp.type.RValue;
-import redis.store.Expiry;
+import redis.store.CacheEntry;
 import redis.store.Storage;
 import redis.stream.Stream;
 import redis.stream.identifier.Identifier;
@@ -30,7 +30,7 @@ public class XAddCommand implements Command {
         storage.append(
                 key,
                 Stream.class,
-                () -> Expiry.never(new Stream()),
+                () -> CacheEntry.permanent(new Stream()),
                 (stream) -> {
                     UniqueIdentifier newId = stream.add(id, keyValues);
                     newIdReference.set(newId);

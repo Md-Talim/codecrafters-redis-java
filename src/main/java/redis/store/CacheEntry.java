@@ -1,6 +1,6 @@
 package redis.store;
 
-public record Expiry<T>(T value, long until) {
+public record CacheEntry<T>(T value, long until) {
     public boolean isExpired() {
         if (until == -1) {
             return false;
@@ -9,11 +9,11 @@ public record Expiry<T>(T value, long until) {
         return System.currentTimeMillis() > until;
     }
 
-    public static <T> Expiry<T> never(T value) {
-        return new Expiry<T>(value, -1);
+    public static <T> CacheEntry<T> permanent(T value) {
+        return new CacheEntry<T>(value, -1);
     }
 
-    public boolean isType(Class<?> type) {
+    public boolean hasType(Class<?> type) {
         if (value == null) {
             return false;
         }
@@ -21,8 +21,8 @@ public record Expiry<T>(T value, long until) {
         return value.getClass().equals(type);
     }
 
-    public static <T> Expiry<T> in(T value, long milliseconds) {
+    public static <T> CacheEntry<T> expiringIn(T value, long milliseconds) {
         long until = System.currentTimeMillis() + milliseconds;
-        return new Expiry<T>(value, until);
+        return new CacheEntry<T>(value, until);
     }
 }

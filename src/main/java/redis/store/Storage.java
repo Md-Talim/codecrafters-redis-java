@@ -8,17 +8,17 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class Storage {
-    private final Map<String, Expiry<Object>> map = new ConcurrentHashMap<>();
+    private final Map<String, CacheEntry<Object>> map = new ConcurrentHashMap<>();
 
     public void set(String key, Object value) {
-        map.put(key, Expiry.never(value));
+        map.put(key, CacheEntry.permanent(value));
     }
 
     public void set(String key, Object value, long milliseconds) {
-        map.put(key, Expiry.in(value, milliseconds));
+        map.put(key, CacheEntry.expiringIn(value, milliseconds));
     }
 
-    public void put(String key, Expiry<Object> value) {
+    public void put(String key, CacheEntry<Object> value) {
         map.put(key, value);
     }
 
@@ -42,14 +42,14 @@ public class Storage {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> Expiry<T> append(String key, Class<T> type, Supplier<Expiry<T>> creator, Consumer<T> appender) {
-        return (Expiry<T>) map.compute(key, (_, expiry) -> {
-            if (expiry != null && (expiry.isExpired() || !expiry.isType(type))) {
+    public <T> CacheEntry<T> append(String key, Class<T> type, Supplier<CacheEntry<T>> creator, Consumer<T> appender) {
+        return (CacheEntry<T>) map.compute(key, (_, expiry) -> {
+            if (expiry != null && (expiry.isExpired() || !expiry.hasType(type))) {
                 expiry = null;
             }
 
             if (expiry == null) {
-                expiry = (Expiry<Object>) creator.get();
+                expiry = (CacheEntry<Object>) creator.get();
             }
 
             appender.accept((T) expiry.value());

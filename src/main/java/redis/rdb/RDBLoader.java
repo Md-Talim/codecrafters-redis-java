@@ -8,7 +8,7 @@ import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import redis.store.Expiry;
+import redis.store.CacheEntry;
 import redis.store.Storage;
 
 public class RDBLoader {
@@ -82,7 +82,7 @@ public class RDBLoader {
                     if (expiresAt != null) {
                         long millisecondsFromNow = expiresAt - System.currentTimeMillis();
                         if (millisecondsFromNow > 0) {
-                            storage.put(key, Expiry.in(value, millisecondsFromNow));
+                            storage.put(key, CacheEntry.expiringIn(value, millisecondsFromNow));
                         }
                     } else {
                         storage.set(key, value);
