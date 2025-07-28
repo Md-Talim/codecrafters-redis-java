@@ -12,6 +12,7 @@ import redis.stream.identifier.WildcardIdentifier;
 public class Stream {
     private final List<StreamEntry> entries = new ArrayList<>();
     private final String XADD_ID_EQUAL_OR_SMALLER = "ERR The ID specified in XADD is equal or smaller than the target stream top item";
+    private final String XADD_ID_GREATER_THAN_ZERO = "ERR The ID specified in XADD must be greater than 0-0";
 
     public UniqueIdentifier add(Identifier id, List<RValue> content) {
         var unique = switch (id) {
@@ -19,6 +20,10 @@ public class Stream {
             case UniqueIdentifier identifier -> identifier;
             case WildcardIdentifier _ -> getIdentifier(System.currentTimeMillis());
         };
+
+        if (unique.milliseconds() == 0 && unique.sequenceNumber() == 0) {
+            throw new RuntimeException(XADD_ID_GREATER_THAN_ZERO);
+        }
 
         if (!isUnique(unique)) {
             throw new RuntimeException(XADD_ID_EQUAL_OR_SMALLER);
@@ -46,13 +51,6 @@ public class Stream {
         }
 
         UniqueIdentifier last = entries.getLast().identifier();
-        if (last.milliseconds() > identifier.milliseconds()) {
-            return false;
-        }
-        if (last.milliseconds() == identifier.milliseconds()) {
-            return last.sequenceNumber() < identifier.sequenceNumber();
-        }
-
-        return true;
+        return identifier.compareTo(last) > 0;
     }
 }

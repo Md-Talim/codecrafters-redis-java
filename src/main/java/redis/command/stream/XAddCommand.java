@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import redis.command.Command;
 import redis.resp.type.BulkString;
 import redis.resp.type.RValue;
+import redis.resp.type.SimpleError;
 import redis.store.CacheEntry;
 import redis.store.Storage;
 import redis.stream.Stream;
@@ -27,16 +28,21 @@ public class XAddCommand implements Command {
         List<RValue> keyValues = args.subList(2, args.size() - 1);
 
         var newIdReference = new AtomicReference<UniqueIdentifier>();
-        storage.append(
+        try {
+            storage.append(
                 key,
                 Stream.class,
                 () -> CacheEntry.permanent(new Stream()),
                 (stream) -> {
                     UniqueIdentifier newId = stream.add(id, keyValues);
                     newIdReference.set(newId);
-                });
+                }
+            );
 
-        return new BulkString(newIdReference.get().toString());
+            return new BulkString(newIdReference.get().toString());
+        } catch (RuntimeException e) {
+            return new SimpleError(e.getMessage());
+        }
     }
 
     @Override

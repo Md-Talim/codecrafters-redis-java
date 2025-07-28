@@ -12,7 +12,7 @@ public sealed interface Identifier permits MillisecondsIdentifier, UniqueIdentif
 
         var matcher = PATTERN.matcher(input);
         if (!matcher.find()) {
-            throw new IllegalArgumentException("not a valid identifier: %s".formatted(input));
+            throw new IllegalArgumentException("ERR Invalid stream ID specified as stream command argument");
         }
 
         var milliseconds = Long.parseLong(matcher.group(1));
