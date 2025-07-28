@@ -3,6 +3,9 @@ package redis.stream.identifier;
 public record UniqueIdentifier(long milliseconds, long sequenceNumber)
         implements Identifier, Comparable<Identifier> {
 
+    public static final UniqueIdentifier MIN = new UniqueIdentifier(0, 1);
+    public static final UniqueIdentifier MAX = new UniqueIdentifier(Long.MAX_VALUE, Long.MAX_VALUE);
+
     @Override
     public String toString() {
         return "%d-%d".formatted(milliseconds, sequenceNumber);

@@ -10,6 +10,13 @@ public sealed interface Identifier permits MillisecondsIdentifier, UniqueIdentif
             return WildcardIdentifier.INSTANCE;
         }
 
+        if ("-".equals(input)) {
+            return UniqueIdentifier.MIN;
+        }
+        if ("+".equals(input)) {
+            return UniqueIdentifier.MAX;
+        }
+
         var matcher = PATTERN.matcher(input);
         if (!matcher.find()) {
             throw new IllegalArgumentException("ERR Invalid stream ID specified as stream command argument");
