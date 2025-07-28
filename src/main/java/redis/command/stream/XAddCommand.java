@@ -25,7 +25,7 @@ public class XAddCommand implements Command {
         String key = args.get(0).toString();
         Identifier id = Identifier.parse(args.get(1).toString());
 
-        List<RValue> keyValues = args.subList(2, args.size() - 1);
+        List<RValue> keyValues = args.subList(2, args.size());
 
         var newIdReference = new AtomicReference<UniqueIdentifier>();
         try {

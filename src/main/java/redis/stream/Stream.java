@@ -14,7 +14,7 @@ public class Stream {
     private final String XADD_ID_EQUAL_OR_SMALLER = "ERR The ID specified in XADD is equal or smaller than the target stream top item";
     private final String XADD_ID_GREATER_THAN_ZERO = "ERR The ID specified in XADD must be greater than 0-0";
 
-    public UniqueIdentifier add(Identifier id, List<RValue> content) {
+    public synchronized UniqueIdentifier add(Identifier id, List<RValue> content) {
         var unique = switch (id) {
             case MillisecondsIdentifier identifier -> getIdentifier(identifier.milliseconds());
             case UniqueIdentifier identifier -> identifier;
@@ -32,6 +32,27 @@ public class Stream {
         entries.add(new StreamEntry(unique, content));
 
         return unique;
+    }
+
+    public synchronized List<StreamEntry> range(Identifier from, Identifier to) {
+        List<StreamEntry> result = new ArrayList<StreamEntry>();
+        boolean collecting = false;
+
+        for (StreamEntry entry : entries) {
+            var identifier = entry.identifier();
+            if (identifier.compareTo(to) > 0) {
+                break;
+            }
+
+            if (collecting) {
+                result.add(entry);
+            } else if (identifier.compareTo(from) >= 0) {
+                collecting = true;
+                result.add(entry);
+            }
+        }
+
+        return result;
     }
 
     public UniqueIdentifier getIdentifier(long milliseconds) {
