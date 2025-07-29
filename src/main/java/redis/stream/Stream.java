@@ -34,6 +34,24 @@ public class Stream {
         return unique;
     }
 
+    public synchronized List<StreamEntry> read(Identifier fromExclusive) {
+        List<StreamEntry> result = new ArrayList<StreamEntry>();
+        boolean collecting = false;
+
+        for (StreamEntry entry : entries) {
+            var identifier = entry.identifier();
+
+            if (collecting) {
+                result.add(entry);
+            } else if (identifier.compareTo(fromExclusive) > 0) {
+                collecting = true;
+                result.add(entry);
+            }
+        }
+
+        return result;
+    }
+
     public synchronized List<StreamEntry> range(Identifier from, Identifier to) {
         List<StreamEntry> result = new ArrayList<StreamEntry>();
         boolean collecting = false;
