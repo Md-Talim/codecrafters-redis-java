@@ -1,23 +1,33 @@
 package redis.configuration;
 
-public class Property {
-    private final String key;
-    private String value;
+import java.util.function.Function;
 
-    public Property(String key) {
+public class Property<T> {
+    private final String key;
+    private final Function<String, T> converter;
+    private T value;
+
+    public Property(String key, Function<String, T> converter) {
         this.key = key;
+        this.converter = converter;
+    }
+
+    public Property(String key, Function<String, T> converter, T defaultValue) {
+        this.key = key;
+        this.converter = converter;
+        this.value = defaultValue;
     }
 
     public String key() {
         return key;
     }
 
-    public String value() {
+    public T value() {
         return value;
     }
 
     public void set(String value) {
-        this.value = value;
+        this.value = converter.apply(value);
     }
 
     public boolean isSet() {

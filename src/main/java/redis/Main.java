@@ -11,8 +11,6 @@ import redis.rdb.RDBLoader;
 import redis.store.Storage;
 
 public class Main {
-    public static final int PORT = 6379;
-
     public static void main(String[] args) {
         final var threadFactory = Thread.ofVirtual().factory();
         final var storage = new Storage();
@@ -30,8 +28,8 @@ public class Main {
             }
         }
 
-        Property directory = configuration.directory();
-        Property dbFilename = configuration.dbFilename();
+        Property<String> directory = configuration.directory();
+        Property<String> dbFilename = configuration.dbFilename();
         if (directory.isSet() && dbFilename.isSet()) {
             var path = Paths.get(directory.value(), dbFilename.value());
             if (Files.exists(path)) {
@@ -39,7 +37,10 @@ public class Main {
             }
         }
 
-        try (final var serverSocket = new ServerSocket(PORT)) {
+        final int port = configuration.port().value();
+        System.out.println("port: %s".formatted(port));
+
+        try (final var serverSocket = new ServerSocket(port)) {
             serverSocket.setReuseAddress(true);
 
             while (true) {

@@ -30,7 +30,7 @@ public class ConfigCommand implements Command {
             return new RArray(Collections.emptyList());
         }
 
-        List<RValue> response = Arrays.asList(new BulkString(key), new BulkString(property.value()));
+        List<RValue> response = Arrays.asList(new BulkString(key), new BulkString(property.value().toString()));
         return new RArray(response);
     }
 
