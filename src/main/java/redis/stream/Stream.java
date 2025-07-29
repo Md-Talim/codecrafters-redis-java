@@ -18,6 +18,7 @@ public class Stream {
     private final List<StreamEntry> entries = new ArrayList<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final Condition dataCondition = lock.writeLock().newCondition();
+    private UniqueIdentifier lastIdentifier;
 
     private final String XADD_ID_EQUAL_OR_SMALLER = "ERR The ID specified in XADD is equal or smaller than the target stream top item";
     private final String XADD_ID_GREATER_THAN_ZERO = "ERR The ID specified in XADD must be greater than 0-0";
@@ -39,6 +40,7 @@ public class Stream {
             }
 
             entries.add(new StreamEntry(unique, content));
+            lastIdentifier = unique;
             dataCondition.signalAll();
 
             return unique;
@@ -73,7 +75,7 @@ public class Stream {
 
     public List<StreamEntry> read(Identifier fromExclusive, Duration timeout) {
         if (fromExclusive == null) {
-            fromExclusive = getIdentifier(System.currentTimeMillis());
+            fromExclusive = lastIdentifier;
         } else {
             List<StreamEntry> result = read(fromExclusive);
             if (!result.isEmpty()) {
@@ -91,6 +93,10 @@ public class Stream {
     private boolean awaitNewData(Duration timeout) {
         lock.writeLock().lock();
         try {
+            if (Duration.ZERO.equals(timeout)) {
+                dataCondition.await();
+                return true;
+            }
             return dataCondition.await(timeout.toMillis(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException ignored) {
             ;
