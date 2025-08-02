@@ -2,13 +2,19 @@ package redis;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import redis.configuration.Argument;
 import redis.configuration.Configuration;
+import redis.configuration.RemoteOption;
 import redis.rdb.RDBLoader;
+import redis.resp.Deserializer;
+import redis.resp.type.BulkString;
+import redis.resp.type.RArray;
 import redis.store.Storage;
 
 public class Main {
@@ -32,6 +38,7 @@ public class Main {
                 Argument<?> port = option.getArgumentAt(1);
                 host.set(value[0]);
                 port.set(value[1]);
+                i++;
                 continue;
             }
 
@@ -54,13 +61,11 @@ public class Main {
             System.out.println("configuration: %s(%s)".formatted(option.name(), arguments));
         }
 
-        Argument<String> directory = configuration.directory().getPathArgument();
-        Argument<String> dbFilename = configuration.databaseFilename().getPathArgument();
-        if (directory.isSet() && dbFilename.isSet()) {
-            var path = Paths.get(directory.value(), dbFilename.value());
-            if (Files.exists(path)) {
-                RDBLoader.load(path, storage);
-            }
+        boolean isSlave = configuration.isSlave();
+        if (isSlave) {
+            connectToMaster(configuration.replicaOf());
+        } else {
+            loadRDBfile(storage, configuration);
         }
 
         final int port = configuration.port().getArgumentAt(0, Integer.class).value();
@@ -77,6 +82,32 @@ public class Main {
             }
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
+        }
+    }
+
+    private static void loadRDBfile(final Storage storage, final Configuration configuration) {
+        Argument<String> directory = configuration.directory().getPathArgument();
+        Argument<String> dbFilename = configuration.databaseFilename().getPathArgument();
+        if (directory.isSet() && dbFilename.isSet()) {
+            var path = Paths.get(directory.value(), dbFilename.value());
+            if (Files.exists(path)) {
+                RDBLoader.load(path, storage);
+            }
+        }
+    }
+
+    private static void connectToMaster(RemoteOption replicaOf) {
+        try (final var socket = new Socket(replicaOf.hostArgument().value(), replicaOf.portArgument().value())) {
+            final var inputStream = socket.getInputStream();
+            final var outputStream = socket.getOutputStream();
+
+            final var deserializer = new Deserializer(inputStream);
+            final var pingCommand = new BulkString("PING");
+            outputStream.write(new RArray(List.of(pingCommand)).serialize());
+
+            var response = deserializer.read();
+            System.out.println("replica: received %s".formatted(response.toString()));
+        } catch (IOException e) {
         }
     }
 }
