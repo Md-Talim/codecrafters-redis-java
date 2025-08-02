@@ -144,6 +144,21 @@ public class Main {
                 var response = deserializer.read();
                 System.out.println("replica: received %s".formatted(response.toString()));
             }
+
+            // Replica sends PSYNC to the master
+            {
+                System.out.println("replica: send PSYNC ? -1");
+                var psyncCommand = new RArray(
+                        List.of(
+                                new BulkString("PSYNC"),
+                                new BulkString("?"),
+                                new BulkString("-1")
+                        )
+                );
+                outputStream.write(psyncCommand.serialize());
+                var response = deserializer.read();
+                System.out.println("replica: received %s".formatted(response.toString()));
+            }
         } catch (IOException e) {
         }
     }
