@@ -4,32 +4,58 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.stream.Collectors;
 
+import redis.configuration.Argument;
 import redis.configuration.Configuration;
-import redis.configuration.Property;
 import redis.rdb.RDBLoader;
 import redis.store.Storage;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         final var threadFactory = Thread.ofVirtual().factory();
         final var storage = new Storage();
         final var configuration = new Configuration();
 
-        for (int i = 0; i < args.length; i += 2) {
+        for (int i = 0; i < args.length; ++i) {
             var key = args[i].substring(2); // remove -- from arg
-            var value = args[i + 1];
 
-            var property = configuration.getProperty(key);
-            if (property == null) {
+            var option = configuration.getOption(key);
+            if (option == null) {
                 System.err.println("unknown property: %s".formatted(key));
-            } else {
-                property.set(value);
+                continue;
             }
+
+            if ("replicaof".equalsIgnoreCase(key)) {
+                String[] value = args[i + 1].split(" ");
+                Argument<?> host = option.getArgumentAt(0);
+                Argument<?> port = option.getArgumentAt(1);
+                host.set(value[0]);
+                port.set(value[1]);
+                continue;
+            }
+
+            int argumentsCount = option.argumentsCount();
+            for (int j = 0; j < argumentsCount; ++j) {
+                Argument<?> argument = option.getArgumentAt(j);
+                String argumentValue = args[i + 1 + j];
+                argument.set(argumentValue);
+            }
+
+            i += argumentsCount;
         }
 
-        Property<String> directory = configuration.directory();
-        Property<String> dbFilename = configuration.dbFilename();
+        for (final var option : configuration.options()) {
+            final var arguments = option.arguments()
+                    .stream()
+                    .map((argument) -> "%s=`%s`".formatted(argument.key(), argument.value()))
+                    .collect(Collectors.joining(", "));
+
+            System.out.println("configuration: %s(%s)".formatted(option.name(), arguments));
+        }
+
+        Argument<String> directory = configuration.directory().getPathArgument();
+        Argument<String> dbFilename = configuration.databaseFilename().getPathArgument();
         if (directory.isSet() && dbFilename.isSet()) {
             var path = Paths.get(directory.value(), dbFilename.value());
             if (Files.exists(path)) {
@@ -37,7 +63,7 @@ public class Main {
             }
         }
 
-        final int port = configuration.port().value();
+        final int port = configuration.port().getArgumentAt(0, Integer.class).value();
         System.out.println("port: %s".formatted(port));
 
         try (final var serverSocket = new ServerSocket(port)) {

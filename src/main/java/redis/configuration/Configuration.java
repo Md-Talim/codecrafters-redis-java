@@ -2,33 +2,45 @@ package redis.configuration;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 
 public class Configuration {
-    private final Property<Integer> port = new Property<>("port", Integer::parseInt, 6379);
-    private final Property<String> directory = new Property<>("dir", Function.identity());
-    private final Property<String> databaseFilename = new Property<>("dbfilename", Function.identity());
+    private final Option port = new Option("port", List.of(new PortArgument(6379)));
+    private final PathOption directory = new PathOption("dir");
+    private final PathOption databaseFilename = new PathOption("dbfilename");
+    private final RemoteOption replicaOf = new RemoteOption("replicaof");
 
-    private final List<Property<?>> properties = Arrays.asList(port, directory, databaseFilename);
+    private final List<Option> options = Arrays.asList(port, directory, databaseFilename, replicaOf);
 
-    public Property<?> getProperty(String key) {
-        for (final var property : properties) {
-            if (property.key().equalsIgnoreCase(key)) {
+    public Option getOption(String key) {
+        for (final var property : options) {
+            if (property.name().equalsIgnoreCase(key)) {
                 return property;
             }
         }
         return null;
     }
 
-    public Property<Integer> port() {
+    public Option port() {
         return port;
     }
 
-    public Property<String> directory() {
+    public PathOption directory() {
         return directory;
     }
 
-    public Property<String> dbFilename() {
+    public PathOption databaseFilename() {
         return databaseFilename;
+    }
+
+    public RemoteOption replicaOf() {
+        return replicaOf;
+    }
+
+    public List<Option> options() {
+        return options;
+    }
+
+    public boolean isSlave() {
+        return replicaOf.hostArgument().isSet();
     }
 }

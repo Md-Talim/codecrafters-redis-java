@@ -25,12 +25,15 @@ public class ConfigCommand implements Command {
         }
 
         String key = args.get(1).toString();
-        var property = configuration.getProperty(key);
-        if (property == null) {
+        var option = configuration.getOption(key);
+        if (option == null) {
             return new RArray(Collections.emptyList());
         }
 
-        List<RValue> response = Arrays.asList(new BulkString(key), new BulkString(property.value().toString()));
+        List<RValue> response = Arrays.asList(
+                new BulkString(key),
+                new BulkString(option.getArgumentAt(0).value().toString())
+        );
         return new RArray(response);
     }
 

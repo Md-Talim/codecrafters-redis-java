@@ -34,7 +34,7 @@ public class Evaluator {
         Command xAddCommand = new XAddCommand(storage);
         Command xRangeCommand = new XRangeCommand(storage);
         Command xReadCommand = new XReadCommand(storage);
-        Command infoCommand = new InfoCommand();
+        Command infoCommand = new InfoCommand(configuration);
         commands.put(pingCommand.getName(), pingCommand);
         commands.put(echoCommand.getName(), echoCommand);
         commands.put(setCommand.getName(), setCommand);
