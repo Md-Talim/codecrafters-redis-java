@@ -12,7 +12,7 @@ import redis.command.KeysCommand;
 import redis.command.PingCommand;
 import redis.command.SetCommand;
 import redis.command.TypeCommand;
-import redis.command.replication.PsyncComman;
+import redis.command.replication.PsyncCommand;
 import redis.command.replication.ReplConfCommand;
 import redis.command.stream.XAddCommand;
 import redis.command.stream.XRangeCommand;
@@ -39,7 +39,7 @@ public class Evaluator {
         Command xReadCommand = new XReadCommand(storage);
         Command infoCommand = new InfoCommand(configuration);
         Command replconfCommand = new ReplConfCommand();
-        Command psyncCommand = new PsyncComman();
+        Command psyncCommand = new PsyncCommand();
         commands.put(pingCommand.getName(), pingCommand);
         commands.put(echoCommand.getName(), echoCommand);
         commands.put(setCommand.getName(), setCommand);

@@ -6,7 +6,7 @@ import redis.command.Command;
 import redis.resp.type.RValue;
 import redis.resp.type.SimpleString;
 
-public class PsyncComman implements Command {
+public class PsyncCommand implements Command {
 
     // Hardcoded master replication id
     private final String masterReplId = "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb";

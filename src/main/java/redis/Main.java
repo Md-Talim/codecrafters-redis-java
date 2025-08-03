@@ -160,6 +160,7 @@ public class Main {
                 System.out.println("replica: received %s".formatted(response.toString()));
             }
         } catch (IOException e) {
+            System.out.println("IOException: " + e.getMessage());
         }
     }
 }
