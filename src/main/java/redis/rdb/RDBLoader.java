@@ -12,6 +12,7 @@ import redis.store.CacheEntry;
 import redis.store.Storage;
 
 public class RDBLoader {
+
     public static final String RDB_HEADER = "REDIS0011";
     public static final byte OP_AUX = (byte) 0xFA;
     public static final byte OP_SELECTDB = (byte) 0xFE;
@@ -34,8 +35,9 @@ public class RDBLoader {
 
         while (true) {
             int op = in.read();
-            if (op == -1)
+            if (op == -1) {
                 break;
+            }
             byte opcode = (byte) op;
 
             if (opcode == OP_AUX) {
@@ -55,8 +57,9 @@ public class RDBLoader {
                 while (true) {
                     int kvOp = in.read();
                     if (kvOp == -1 || kvOp == OP_SELECTDB || kvOp == OP_EOF || kvOp == OP_AUX) {
-                        if (kvOp != -1)
+                        if (kvOp != -1) {
                             in.skip(-1);
+                        }
                         break;
                     }
 
@@ -73,8 +76,9 @@ public class RDBLoader {
                         valueType = (byte) in.read();
                     }
 
-                    if (valueType != VALUE_TYPE_STRING)
+                    if (valueType != VALUE_TYPE_STRING) {
                         throw new IOException("Unsupported value type: " + valueType);
+                    }
 
                     String key = readString();
                     String value = readString();
@@ -109,15 +113,17 @@ public class RDBLoader {
 
     private long readSize() throws IOException {
         int b = in.read();
-        if (b == -1)
+        if (b == -1) {
             throw new EOFException();
+        }
         int encodingType = (b & 0xC0) >> 6;
         if (encodingType == 0) {
             return b & 0x3F;
         } else if (encodingType == 1) {
             int next = in.read();
-            if (next == -1)
+            if (next == -1) {
                 throw new EOFException();
+            }
             return ((b & 0x3F) << 8) | next;
         } else if (encodingType == 2) {
             return readUint32BigEndian();
@@ -144,27 +150,31 @@ public class RDBLoader {
             }
         }
 
-        if (size == 0)
+        if (size == 0) {
             return "";
+        }
 
         byte[] buf = new byte[(int) size];
         int read = in.read(buf);
-        if (read != size)
+        if (read != size) {
             throw new IOException("Unexpected EOF reading string");
+        }
         return new String(buf);
     }
 
     private long readStringSize() throws IOException {
         int b = in.read();
-        if (b == -1)
+        if (b == -1) {
             throw new EOFException();
+        }
         int encodingType = (b & 0xC0) >> 6;
         if (encodingType == 0) {
             return b & 0x3F;
         } else if (encodingType == 1) {
             int next = in.read();
-            if (next == -1)
+            if (next == -1) {
                 throw new EOFException();
+            }
             return ((b & 0x3F) << 8) | next;
         } else if (encodingType == 2) {
             return readUint32BigEndian();
@@ -175,29 +185,33 @@ public class RDBLoader {
 
     private long readUint32() throws IOException {
         byte[] bytes = new byte[4];
-        if (in.read(bytes) != 4)
+        if (in.read(bytes) != 4) {
             throw new EOFException();
+        }
         ByteBuffer bb = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
         return bb.getInt() & 0xFFFFFFFFL;
     }
 
     private long readUint32BigEndian() throws IOException {
         byte[] bytes = new byte[4];
-        if (in.read(bytes) != 4)
+        if (in.read(bytes) != 4) {
             throw new EOFException();
+        }
         ByteBuffer bb = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN);
         return bb.getInt() & 0xFFFFFFFFL;
     }
 
     private long readUint64() throws IOException {
         byte[] bytes = new byte[8];
-        if (in.read(bytes) != 8)
+        if (in.read(bytes) != 8) {
             throw new EOFException();
+        }
         ByteBuffer bb = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
         return bb.getLong();
     }
 
     public static class RDBValue {
+
         public final String value;
         public final Long expiresAt;
 
@@ -209,8 +223,7 @@ public class RDBLoader {
 
     public static void load(Path path, Storage storage) {
         try (
-                var fileInputStream = Files.newInputStream(path);
-                var dataInputStream = new DataInputStream(fileInputStream)) {
+                var fileInputStream = Files.newInputStream(path); var dataInputStream = new DataInputStream(fileInputStream)) {
             var loader = new RDBLoader(dataInputStream, storage);
             loader.load();
         } catch (IOException e) {
