@@ -14,6 +14,7 @@ import redis.stream.identifier.Identifier;
 import redis.stream.identifier.UniqueIdentifier;
 
 public class XAddCommand implements Command {
+
     private final Storage storage;
 
     public XAddCommand(Storage storage) {
@@ -30,13 +31,13 @@ public class XAddCommand implements Command {
         var newIdReference = new AtomicReference<UniqueIdentifier>();
         try {
             storage.append(
-                key,
-                Stream.class,
-                () -> CacheEntry.permanent(new Stream()),
-                (stream) -> {
-                    UniqueIdentifier newId = stream.add(id, keyValues);
-                    newIdReference.set(newId);
-                }
+                    key,
+                    Stream.class,
+                    () -> CacheEntry.permanent(new Stream()),
+                    (stream) -> {
+                        UniqueIdentifier newId = stream.add(id, keyValues);
+                        newIdReference.set(newId);
+                    }
             );
 
             return new BulkString(newIdReference.get().toString());
@@ -46,7 +47,7 @@ public class XAddCommand implements Command {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "XADD";
     }
 }

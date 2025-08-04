@@ -14,6 +14,7 @@ import redis.stream.StreamEntry;
 import redis.stream.identifier.Identifier;
 
 public class XReadCommand implements Command {
+
     private final Storage storage;
 
     public XReadCommand(Storage storage) {
@@ -23,6 +24,7 @@ public class XReadCommand implements Command {
     @Override
     public RValue execute(List<RValue> args) {
         record Query(String key, Identifier identifier) {
+
         }
         List<Query> queries = new ArrayList<Query>();
         Duration timeout = null;
@@ -95,7 +97,7 @@ public class XReadCommand implements Command {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "XREAD";
     }
 

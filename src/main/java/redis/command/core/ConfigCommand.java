@@ -1,9 +1,10 @@
-package redis.command;
+package redis.command.core;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import redis.command.Command;
 import redis.configuration.Configuration;
 import redis.resp.type.BulkString;
 import redis.resp.type.RArray;
@@ -11,6 +12,7 @@ import redis.resp.type.RValue;
 import redis.resp.type.SimpleError;
 
 public class ConfigCommand implements Command {
+
     private final Configuration configuration;
 
     public ConfigCommand(Configuration configutaion) {
@@ -38,7 +40,7 @@ public class ConfigCommand implements Command {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "CONFIG";
     }
 

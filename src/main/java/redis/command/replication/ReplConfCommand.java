@@ -14,7 +14,7 @@ public class ReplConfCommand implements Command {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "REPLCONF";
     }
 }

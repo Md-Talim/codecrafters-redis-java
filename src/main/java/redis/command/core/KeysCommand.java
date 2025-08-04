@@ -1,8 +1,9 @@
-package redis.command;
+package redis.command.core;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import redis.command.Command;
 import redis.resp.type.BulkString;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
@@ -10,6 +11,7 @@ import redis.resp.type.SimpleError;
 import redis.store.Storage;
 
 public class KeysCommand implements Command {
+
     private final Storage storage;
 
     public KeysCommand(Storage storage) {
@@ -32,7 +34,7 @@ public class KeysCommand implements Command {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "KEYS";
     }
 

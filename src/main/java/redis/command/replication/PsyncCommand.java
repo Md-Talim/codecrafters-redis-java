@@ -30,7 +30,7 @@ public class PsyncCommand implements Command {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "PSYNC";
     }
 

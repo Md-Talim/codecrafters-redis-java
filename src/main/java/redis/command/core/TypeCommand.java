@@ -1,7 +1,8 @@
-package redis.command;
+package redis.command.core;
 
 import java.util.List;
 
+import redis.command.Command;
 import redis.resp.type.BulkString;
 import redis.resp.type.RValue;
 import redis.resp.type.SimpleError;
@@ -10,6 +11,7 @@ import redis.store.Storage;
 import redis.stream.Stream;
 
 public class TypeCommand implements Command {
+
     private final Storage storage;
 
     public TypeCommand(Storage storage) {
@@ -34,7 +36,7 @@ public class TypeCommand implements Command {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "TYPE";
     }
 }

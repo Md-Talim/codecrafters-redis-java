@@ -1,12 +1,14 @@
-package redis.command;
+package redis.command.core;
 
 import java.util.List;
 
+import redis.command.Command;
 import redis.configuration.Configuration;
 import redis.resp.type.BulkString;
 import redis.resp.type.RValue;
 
 public class InfoCommand implements Command {
+
     private final Configuration configuration;
     private final String masterReplId = "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb";
     private final int masterReplOffset = 0;
@@ -26,14 +28,15 @@ public class InfoCommand implements Command {
                         master_replid:%s
                         master_repl_offset:%s
                          """.formatted(role, masterReplId, masterReplOffset)
-                    );
+                );
             }
-            default -> new BulkString("");
+            default ->
+                new BulkString("");
         };
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "INFO";
     }
 

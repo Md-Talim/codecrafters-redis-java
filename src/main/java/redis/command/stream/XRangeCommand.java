@@ -13,6 +13,7 @@ import redis.stream.StreamEntry;
 import redis.stream.identifier.Identifier;
 
 public class XRangeCommand implements Command {
+
     private final Storage storage;
 
     public XRangeCommand(Storage storage) {
@@ -38,7 +39,7 @@ public class XRangeCommand implements Command {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "XRANGE";
     }
 

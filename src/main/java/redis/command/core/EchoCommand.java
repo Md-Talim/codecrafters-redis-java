@@ -1,7 +1,8 @@
-package redis.command;
+package redis.command.core;
 
 import java.util.List;
 
+import redis.command.Command;
 import redis.resp.type.BulkString;
 import redis.resp.type.RValue;
 
@@ -18,7 +19,7 @@ public class EchoCommand implements Command {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "ECHO";
     }
 
