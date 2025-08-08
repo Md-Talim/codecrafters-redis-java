@@ -16,6 +16,7 @@ import redis.command.core.SetCommand;
 import redis.command.core.TypeCommand;
 import redis.command.replication.PsyncCommand;
 import redis.command.replication.ReplConfCommand;
+import redis.command.replication.WaitCommand;
 import redis.command.stream.XAddCommand;
 import redis.command.stream.XRangeCommand;
 import redis.command.stream.XReadCommand;
@@ -36,7 +37,8 @@ public class CommandRegistry {
             new XReadCommand(redis),
             new InfoCommand(redis),
             new ReplConfCommand(redis),
-            new PsyncCommand(redis)
+            new PsyncCommand(redis),
+            new WaitCommand()
         );
 
         return commandList
