@@ -3,10 +3,10 @@ package redis.command.stream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-
 import redis.Redis;
 import redis.client.Client;
 import redis.command.Command;
+import redis.command.CommandResponse;
 import redis.resp.type.BulkString;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
@@ -24,12 +24,10 @@ public class XReadCommand implements Command {
     }
 
     @Override
-    public RValue execute(Client client, RArray command) {
+    public CommandResponse execute(Client client, RArray command) {
         List<RValue> args = command.getArgs();
 
-        record Query(String key, Identifier identifier) {
-
-        }
+        record Query(String key, Identifier identifier) {}
         List<Query> queries = new ArrayList<>();
         Duration timeout = null;
 
@@ -53,7 +51,10 @@ public class XReadCommand implements Command {
                 for (int j = 0; j < offset; j++) {
                     String key = args.get(i + j).toString();
                     element = args.get(i + offset + j).toString();
-                    Identifier identifier = timeout != null && "$".equals(element) ? null : Identifier.parse(element);
+                    Identifier identifier = timeout != null &&
+                        "$".equals(element)
+                        ? null
+                        : Identifier.parse(element);
                     queries.add(new Query(key, identifier));
                 }
 
@@ -65,20 +66,31 @@ public class XReadCommand implements Command {
             Query query = queries.getFirst();
             String key = query.key();
             Stream stream = (Stream) storage.get(key);
-            List<StreamEntry> entries = stream.read(query.identifier(), timeout);
+            List<StreamEntry> entries = stream.read(
+                query.identifier(),
+                timeout
+            );
 
             if (entries == null) {
-                return new BulkString(null);
+                return new CommandResponse(new BulkString(null));
             }
 
             List<RValue> entryResponse = new ArrayList<>();
             for (var entry : entries) {
-                var entryData = List.of(new BulkString(entry.identifier().toString()), new RArray(entry.content()));
+                var entryData = List.of(
+                    new BulkString(entry.identifier().toString()),
+                    new RArray(entry.content())
+                );
                 entryResponse.add(new RArray(entryData));
             }
 
-            entryResponse = List.of(new BulkString(key), new RArray(entryResponse));
-            return new RArray(List.of(new RArray(entryResponse)));
+            entryResponse = List.of(
+                new BulkString(key),
+                new RArray(entryResponse)
+            );
+            return new CommandResponse(
+                new RArray(List.of(new RArray(entryResponse)))
+            );
         }
 
         List<RValue> fullResponse = new ArrayList<>();
@@ -89,15 +101,21 @@ public class XReadCommand implements Command {
 
             List<RValue> queryResponse = new ArrayList<>();
             for (var entry : entries) {
-                var entryData = List.of(new BulkString(entry.identifier().toString()), new RArray(entry.content()));
+                var entryData = List.of(
+                    new BulkString(entry.identifier().toString()),
+                    new RArray(entry.content())
+                );
                 queryResponse.add(new RArray(entryData));
             }
 
-            queryResponse = List.of(new BulkString(key), new RArray(queryResponse));
+            queryResponse = List.of(
+                new BulkString(key),
+                new RArray(queryResponse)
+            );
             fullResponse.add(new RArray(queryResponse));
         }
 
-        return new RArray(fullResponse);
+        return new CommandResponse(new RArray(fullResponse));
     }
 
     @Override

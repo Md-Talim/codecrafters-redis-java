@@ -5,6 +5,7 @@ import java.util.List;
 import redis.Redis;
 import redis.client.Client;
 import redis.command.Command;
+import redis.command.CommandResponse;
 import redis.resp.type.BulkString;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
@@ -22,7 +23,7 @@ public class XRangeCommand implements Command {
     }
 
     @Override
-    public RValue execute(Client client, RArray command) {
+    public CommandResponse execute(Client client, RArray command) {
         List<RValue> args = command.getArgs();
         String key = args.get(0).toString();
         Identifier fromId = Identifier.parse(args.get(1).toString());
@@ -40,7 +41,7 @@ public class XRangeCommand implements Command {
             response.add(new RArray(entryData));
         }
 
-        return new RArray(response);
+        return new CommandResponse(new RArray(response));
     }
 
     @Override

@@ -7,6 +7,7 @@ import java.util.Map;
 import redis.client.Client;
 import redis.command.Command;
 import redis.command.CommandRegistry;
+import redis.command.CommandResponse;
 import redis.configuration.Configuration;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
@@ -53,7 +54,7 @@ public class Redis {
         return configuration;
     }
 
-    public RValue evaluate(Client client, RValue command) {
+    public CommandResponse evaluate(Client client, RValue command) {
         if (command instanceof RArray rArray) {
             return evaluateArray(client, rArray);
         }
@@ -61,7 +62,7 @@ public class Redis {
         return null;
     }
 
-    private RValue evaluateArray(Client client, RArray array) {
+    private CommandResponse evaluateArray(Client client, RArray array) {
         if (array.isEmpty()) {
             return null;
         }

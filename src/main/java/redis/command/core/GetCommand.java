@@ -1,10 +1,10 @@
 package redis.command.core;
 
 import java.util.List;
-
 import redis.Redis;
 import redis.client.Client;
 import redis.command.Command;
+import redis.command.CommandResponse;
 import redis.resp.type.BulkString;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
@@ -20,16 +20,22 @@ public class GetCommand implements Command {
     }
 
     @Override
-    public RValue execute(Client client, RArray command) {
+    public CommandResponse execute(Client client, RArray command) {
         List<RValue> args = command.getArgs();
         if (args.size() != 1) {
-            return new SimpleError("ERR wrong number of arguments for 'get' command");
+            return new CommandResponse(
+                new SimpleError(
+                    "ERR wrong number of arguments for 'get' command"
+                )
+            );
         }
 
         String key = args.get(0).toString();
         Object value = storage.get(key);
 
-        return new BulkString(value == null ? null : value.toString());
+        return new CommandResponse(
+            new BulkString(value == null ? null : value.toString())
+        );
     }
 
     @Override

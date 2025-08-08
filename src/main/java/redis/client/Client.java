@@ -54,7 +54,7 @@ public class Client implements Runnable {
                     continue;
                 }
 
-                outputStream.write(response.serialize());
+                outputStream.write(response.value().serialize());
                 outputStream.flush();
             }
 

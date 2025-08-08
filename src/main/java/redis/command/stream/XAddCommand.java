@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import redis.Redis;
 import redis.client.Client;
 import redis.command.Command;
+import redis.command.CommandResponse;
 import redis.resp.type.BulkString;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
@@ -24,11 +25,13 @@ public class XAddCommand implements Command {
     }
 
     @Override
-    public RValue execute(Client client, RArray command) {
+    public CommandResponse execute(Client client, RArray command) {
         List<RValue> args = command.getArgs();
         if (args.size() < 3) {
-            return new SimpleError(
-                "ERR wrong number of arguments for 'xadd' command"
+            return new CommandResponse(
+                new SimpleError(
+                    "ERR wrong number of arguments for 'xadd' command"
+                )
             );
         }
 
@@ -48,9 +51,11 @@ public class XAddCommand implements Command {
                 }
             );
 
-            return new BulkString(newIdReference.get().toString());
+            return new CommandResponse(
+                new BulkString(newIdReference.get().toString())
+            );
         } catch (Exception e) {
-            return new SimpleError(e.getMessage());
+            return new CommandResponse(new SimpleError(e.getMessage()));
         }
     }
 

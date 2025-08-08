@@ -4,6 +4,7 @@ import java.util.List;
 import redis.Redis;
 import redis.client.Client;
 import redis.command.Command;
+import redis.command.CommandResponse;
 import redis.resp.type.EmptyRDBFile;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
@@ -22,7 +23,7 @@ public class PsyncCommand implements Command {
     }
 
     @Override
-    public RValue execute(Client client, RArray command) {
+    public CommandResponse execute(Client client, RArray command) {
         client.setReplicate(true);
 
         final var replicas = redis.replicas();
@@ -30,13 +31,17 @@ public class PsyncCommand implements Command {
 
         if (!client.onDisconnect(replicas::remove)) {
             redis.replicas().remove(client);
-            return new SimpleError("ERR could not enable replica");
+            return new CommandResponse(
+                new SimpleError("ERR could not enable replica")
+            );
         }
 
         List<RValue> args = command.getArgs();
         if (args.size() != 2) {
-            return new SimpleError(
-                "ERR wrong number of arguments for 'psync' command"
+            return new CommandResponse(
+                new SimpleError(
+                    "ERR wrong number of arguments for 'psync' command"
+                )
             );
         }
 

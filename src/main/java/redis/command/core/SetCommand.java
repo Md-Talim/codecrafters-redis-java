@@ -1,10 +1,10 @@
 package redis.command.core;
 
 import java.util.List;
-
 import redis.Redis;
 import redis.client.Client;
 import redis.command.Command;
+import redis.command.CommandResponse;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
 import redis.resp.type.SimpleError;
@@ -22,10 +22,14 @@ public class SetCommand implements Command {
     }
 
     @Override
-    public RValue execute(Client client, RArray command) {
+    public CommandResponse execute(Client client, RArray command) {
         List<RValue> args = command.getArgs();
         if (args.size() != 2 && args.size() != 4) {
-            return new SimpleError("ERR wrong number of arguments for 'set' command");
+            return new CommandResponse(
+                new SimpleError(
+                    "ERR wrong number of arguments for 'set' command"
+                )
+            );
         }
 
         String key = args.get(0).toString();
@@ -34,7 +38,7 @@ public class SetCommand implements Command {
         if (args.size() == 4) {
             String setArg = args.get(2).toString();
             if (!"PX".equalsIgnoreCase(setArg)) {
-                return new SimpleError("ERR syntax error");
+                return new CommandResponse(new SimpleError("ERR syntax error"));
             }
 
             long milliseconds = Long.parseLong(args.get(3).toString());
@@ -45,7 +49,7 @@ public class SetCommand implements Command {
 
         redis.propagate(command);
 
-        return new SimpleString("OK");
+        return new CommandResponse(new SimpleString("OK"));
     }
 
     @Override
