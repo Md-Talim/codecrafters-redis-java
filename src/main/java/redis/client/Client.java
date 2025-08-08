@@ -11,7 +11,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import redis.Redis;
 import redis.resp.Deserializer;
-import redis.resp.type.RArray;
 import redis.resp.type.RValue;
 
 public class Client implements Runnable {
@@ -24,7 +23,8 @@ public class Client implements Runnable {
     private boolean connected;
     private Consumer<Client> disconnectedListener;
     private boolean replicate;
-    private final BlockingQueue<RValue> pendingCommands = new ArrayBlockingQueue<>(128, true);
+    private final BlockingQueue<RValue> pendingCommands =
+        new ArrayBlockingQueue<>(128, true);
 
     public Client(Socket socket, Redis evaluator) throws IOException {
         this.id = ID_INTEGER.incrementAndGet();
@@ -93,10 +93,6 @@ public class Client implements Runnable {
 
     public void setReplicate(boolean replicate) {
         this.replicate = replicate;
-    }
-
-    public void propogate(RArray command) {
-        pendingCommands.add(command);
     }
 
     public void command(RValue value) {

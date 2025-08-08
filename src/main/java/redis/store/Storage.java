@@ -8,7 +8,13 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class Storage {
-    private final Map<String, CacheEntry<Object>> map = new ConcurrentHashMap<>();
+
+    private final Map<String, CacheEntry<Object>> map =
+        new ConcurrentHashMap<>();
+
+    public void clear() {
+        map.clear();
+    }
 
     public void set(String key, Object value) {
         map.put(key, CacheEntry.permanent(value));
@@ -42,9 +48,16 @@ public class Storage {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> CacheEntry<T> append(String key, Class<T> type, Supplier<CacheEntry<T>> creator, Consumer<T> appender) {
+    public <T> CacheEntry<T> append(
+        String key,
+        Class<T> type,
+        Supplier<CacheEntry<T>> creator,
+        Consumer<T> appender
+    ) {
         return (CacheEntry<T>) map.compute(key, (_, expiry) -> {
-            if (expiry != null && (expiry.isExpired() || !expiry.hasType(type))) {
+            if (
+                expiry != null && (expiry.isExpired() || !expiry.hasType(type))
+            ) {
                 expiry = null;
             }
 

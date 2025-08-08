@@ -6,12 +6,6 @@ import java.util.Base64;
 
 public class EmptyRDBFile implements RValue {
 
-    // private final String response;
-
-    // public EmptyRDBFile(String response) {
-    //     this.response = response;
-    // }
-
     @Override
     public byte[] serialize() {
         String emptyRDBBase64 =
@@ -21,7 +15,6 @@ public class EmptyRDBFile implements RValue {
         var rdbHeader = "$%d%s".formatted(emptyRDBData.length, CRLF);
 
         try (var baos = new ByteArrayOutputStream()) {
-            // baos.write(new SimpleString(response).serialize());
             baos.write(rdbHeader.getBytes());
             baos.write(emptyRDBData);
             return baos.toByteArray();

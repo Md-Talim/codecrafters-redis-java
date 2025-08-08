@@ -3,6 +3,7 @@ package redis.rdb;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
@@ -242,10 +243,15 @@ public class RDBLoader {
     }
 
     public static void load(Path path, Storage storage) {
-        try (
-            var fileInputStream = Files.newInputStream(path);
-            var dataInputStream = new DataInputStream(fileInputStream)
-        ) {
+        try (var fileInputStream = Files.newInputStream(path)) {
+            load(fileInputStream, storage);
+        } catch (IOException e) {
+            System.err.println("Error parsing RDB file");
+        }
+    }
+
+    public static void load(InputStream inputStream, Storage storage) {
+        try (var dataInputStream = new DataInputStream(inputStream)) {
             var loader = new RDBLoader(dataInputStream, storage);
             loader.load();
         } catch (IOException e) {

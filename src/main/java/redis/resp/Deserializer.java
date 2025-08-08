@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
 import redis.resp.type.BulkString;
 import redis.resp.type.FirstByte;
 import redis.resp.type.RArray;
@@ -12,6 +11,7 @@ import redis.resp.type.RValue;
 import redis.resp.type.SimpleString;
 
 public class Deserializer {
+
     private final InputStream inputStream;
 
     public Deserializer(InputStream inputStream) {
@@ -19,6 +19,10 @@ public class Deserializer {
     }
 
     public RValue read() throws IOException {
+        return read(false);
+    }
+
+    public RValue read(boolean likelyBlob) throws IOException {
         var firstByte = inputStream.read();
         if (firstByte == -1) {
             return null;
@@ -28,12 +32,23 @@ public class Deserializer {
             case FirstByte.Array -> readArray();
             case FirstByte.SimpleString -> readSimpleString();
             case FirstByte.BulkString -> readBulkString();
-            default -> throw new IllegalArgumentException("Unexpected value: " + firstByte);
+            default -> throw new IllegalArgumentException(
+                "Unexpected value: " + firstByte
+            );
         };
     }
 
+    public byte[] readRDB() throws IOException {
+        int firtByte = inputStream.read();
+        if (firtByte != FirstByte.BulkString) {
+            throw new IOException("Expected bulk string for RDB file");
+        }
+        int length = parseUnsignedInt();
+        return inputStream.readNBytes(length);
+    }
+
     private RArray readArray() throws IOException {
-        int count = Integer.parseUnsignedInt(readLine());
+        int count = parseUnsignedInt();
         List<RValue> array = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             RValue value = read();
@@ -50,7 +65,7 @@ public class Deserializer {
     }
 
     private BulkString readBulkString() throws IOException {
-        int length = Integer.parseUnsignedInt(readLine());
+        int length = parseUnsignedInt();
         if (length == -1) {
             return null;
         }
@@ -61,6 +76,14 @@ public class Deserializer {
         inputStream.read(); // consume \n
 
         return new BulkString(new String(bytes));
+    }
+
+    private int parseUnsignedInt() throws IOException {
+        String line = readLine();
+        if ("-1".equals(line)) {
+            return -1;
+        }
+        return Integer.parseInt(line);
     }
 
     private String readLine() throws IOException {
