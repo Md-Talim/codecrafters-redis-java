@@ -2,7 +2,6 @@ package redis.client;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.List;
@@ -12,19 +11,20 @@ import redis.resp.Deserializer;
 import redis.resp.type.BulkString;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
+import redis.util.TrackedInputStream;
 
 public class ReplicaClient implements Runnable {
 
     private final Socket socket;
     private final Redis redis;
-    private final InputStream inputStream;
+    private final TrackedInputStream inputStream;
     private final OutputStream outputStream;
     private final Deserializer deserializer;
 
     public ReplicaClient(Socket socket, Redis redis) throws IOException {
         this.socket = socket;
         this.redis = redis;
-        inputStream = socket.getInputStream();
+        inputStream = new TrackedInputStream(socket.getInputStream());
         outputStream = socket.getOutputStream();
         deserializer = new Deserializer(inputStream);
     }
@@ -34,10 +34,18 @@ public class ReplicaClient implements Runnable {
         try (socket) {
             handshake();
 
-            RValue request;
-            while ((request = deserializer.read()) != null) {
+            while (true) {
+                inputStream.begin();
+
+                RValue request = deserializer.read();
+                if (request == null) {
+                    break;
+                }
+
+                long read = inputStream.count();
+
                 System.out.println("replica: recieved: %s".formatted(request));
-                var response = redis.evaluate(null, request);
+                var response = redis.evaluate(null, request, read);
 
                 if (response == null) {
                     System.out.println("replica: no answer");

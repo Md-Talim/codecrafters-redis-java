@@ -35,7 +35,7 @@ public class CommandRegistry {
             new XRangeCommand(redis),
             new XReadCommand(redis),
             new InfoCommand(redis),
-            new ReplConfCommand(),
+            new ReplConfCommand(redis),
             new PsyncCommand(redis)
         );
 

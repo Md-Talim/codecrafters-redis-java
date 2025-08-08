@@ -2,6 +2,7 @@ package redis.command.replication;
 
 import java.util.Arrays;
 import java.util.List;
+import redis.Redis;
 import redis.client.Client;
 import redis.command.Command;
 import redis.command.CommandResponse;
@@ -12,6 +13,12 @@ import redis.resp.type.SimpleString;
 
 public class ReplConfCommand implements Command {
 
+    private final Redis redis;
+
+    public ReplConfCommand(Redis redis) {
+        this.redis = redis;
+    }
+
     @Override
     public CommandResponse execute(Client client, RArray command) {
         List<RValue> args = command.getArgs();
@@ -21,7 +28,7 @@ public class ReplConfCommand implements Command {
             List<RValue> response = Arrays.asList(
                 new BulkString("REPLCONF"),
                 new BulkString("ACK"),
-                new BulkString("0")
+                new BulkString(String.valueOf(redis.getReplicationOffset()))
             );
             return new CommandResponse(new RArray(response), false);
         }

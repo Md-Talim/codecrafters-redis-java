@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 import redis.Redis;
 import redis.resp.Deserializer;
 import redis.resp.type.RValue;
+import redis.util.TrackedInputStream;
 
 public class Client implements Runnable {
 
@@ -38,17 +39,24 @@ public class Client implements Runnable {
         System.out.println("%d: connected".formatted(id));
 
         try (socket) {
-            final var inputStream = new BufferedInputStream(
-                socket.getInputStream()
+            final var inputStream = new TrackedInputStream(
+                new BufferedInputStream(socket.getInputStream())
             );
             final var outputStream = new BufferedOutputStream(
                 socket.getOutputStream()
             );
             final var deserializer = new Deserializer(inputStream);
 
-            RValue request;
-            while (!replicate && (request = deserializer.read()) != null) {
-                var response = evaluator.evaluate(this, request);
+            while (!replicate) {
+                inputStream.begin();
+
+                RValue request = deserializer.read();
+                if (request == null) {
+                    break;
+                }
+
+                long read = inputStream.count();
+                var response = evaluator.evaluate(this, request, read);
                 if (response == null) {
                     System.out.println("%d: no answer".formatted(id));
                     continue;
