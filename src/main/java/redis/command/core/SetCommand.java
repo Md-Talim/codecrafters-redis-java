@@ -2,7 +2,10 @@ package redis.command.core;
 
 import java.util.List;
 
+import redis.Redis;
+import redis.client.Client;
 import redis.command.Command;
+import redis.resp.type.RArray;
 import redis.resp.type.RValue;
 import redis.resp.type.SimpleError;
 import redis.resp.type.SimpleString;
@@ -10,14 +13,17 @@ import redis.store.Storage;
 
 public class SetCommand implements Command {
 
+    private final Redis redis;
     private final Storage storage;
 
-    public SetCommand(Storage storage) {
-        this.storage = storage;
+    public SetCommand(Redis redis) {
+        this.redis = redis;
+        this.storage = redis.storage();
     }
 
     @Override
-    public RValue execute(List<RValue> args) {
+    public RValue execute(Client client, RArray command) {
+        List<RValue> args = command.getArgs();
         if (args.size() != 2 && args.size() != 4) {
             return new SimpleError("ERR wrong number of arguments for 'set' command");
         }
@@ -36,6 +42,8 @@ public class SetCommand implements Command {
         } else {
             storage.set(key, value);
         }
+
+        redis.propagate(command);
 
         return new SimpleString("OK");
     }

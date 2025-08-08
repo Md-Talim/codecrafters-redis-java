@@ -2,7 +2,8 @@ package redis.command.stream;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import redis.Redis;
+import redis.client.Client;
 import redis.command.Command;
 import redis.resp.type.BulkString;
 import redis.resp.type.RArray;
@@ -16,12 +17,13 @@ public class XRangeCommand implements Command {
 
     private final Storage storage;
 
-    public XRangeCommand(Storage storage) {
-        this.storage = storage;
+    public XRangeCommand(Redis redis) {
+        this.storage = redis.storage();
     }
 
     @Override
-    public RValue execute(List<RValue> args) {
+    public RValue execute(Client client, RArray command) {
+        List<RValue> args = command.getArgs();
         String key = args.get(0).toString();
         Identifier fromId = Identifier.parse(args.get(1).toString());
         Identifier toId = Identifier.parse(args.get(2).toString());
@@ -31,7 +33,10 @@ public class XRangeCommand implements Command {
 
         List<RValue> response = new ArrayList<>();
         for (StreamEntry entry : entries) {
-            var entryData = List.of(new BulkString(entry.identifier().toString()), new RArray(entry.content()));
+            var entryData = List.of(
+                new BulkString(entry.identifier().toString()),
+                new RArray(entry.content())
+            );
             response.add(new RArray(entryData));
         }
 
@@ -42,5 +47,4 @@ public class XRangeCommand implements Command {
     public String name() {
         return "XRANGE";
     }
-
 }

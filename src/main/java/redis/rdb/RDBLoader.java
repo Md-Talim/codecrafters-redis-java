@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
 import redis.store.CacheEntry;
 import redis.store.Storage;
 
@@ -56,7 +55,12 @@ public class RDBLoader {
                 // Read key-value pairs
                 while (true) {
                     int kvOp = in.read();
-                    if (kvOp == -1 || kvOp == OP_SELECTDB || kvOp == OP_EOF || kvOp == OP_AUX) {
+                    if (
+                        kvOp == -1 ||
+                        kvOp == OP_SELECTDB ||
+                        kvOp == OP_EOF ||
+                        kvOp == OP_AUX
+                    ) {
                         if (kvOp != -1) {
                             in.skip(-1);
                         }
@@ -77,16 +81,25 @@ public class RDBLoader {
                     }
 
                     if (valueType != VALUE_TYPE_STRING) {
-                        throw new IOException("Unsupported value type: " + valueType);
+                        throw new IOException(
+                            "Unsupported value type: " + valueType
+                        );
                     }
 
                     String key = readString();
                     String value = readString();
 
                     if (expiresAt != null) {
-                        long millisecondsFromNow = expiresAt - System.currentTimeMillis();
+                        long millisecondsFromNow =
+                            expiresAt - System.currentTimeMillis();
                         if (millisecondsFromNow > 0) {
-                            storage.put(key, CacheEntry.expiringIn(value, millisecondsFromNow));
+                            storage.put(
+                                key,
+                                CacheEntry.expiringIn(
+                                    value,
+                                    millisecondsFromNow
+                                )
+                            );
                         }
                     } else {
                         storage.set(key, value);
@@ -95,14 +108,19 @@ public class RDBLoader {
             } else if (opcode == OP_EOF) {
                 break;
             } else {
-                throw new IOException(String.format("Unexpected opcode: 0x%02X", opcode));
+                throw new IOException(
+                    String.format("Unexpected opcode: 0x%02X", opcode)
+                );
             }
         }
     }
 
     private void checkHeader() throws IOException {
         byte[] header = new byte[RDB_HEADER.length()];
-        if (in.read(header) != header.length || !new String(header).equals(RDB_HEADER)) {
+        if (
+            in.read(header) != header.length ||
+            !new String(header).equals(RDB_HEADER)
+        ) {
             throw new IOException("Invalid RDB header");
         }
     }
@@ -128,7 +146,9 @@ public class RDBLoader {
         } else if (encodingType == 2) {
             return readUint32BigEndian();
         } else {
-            throw new IOException("Special string encoding not supported in size context");
+            throw new IOException(
+                "Special string encoding not supported in size context"
+            );
         }
     }
 
@@ -223,7 +243,9 @@ public class RDBLoader {
 
     public static void load(Path path, Storage storage) {
         try (
-                var fileInputStream = Files.newInputStream(path); var dataInputStream = new DataInputStream(fileInputStream)) {
+            var fileInputStream = Files.newInputStream(path);
+            var dataInputStream = new DataInputStream(fileInputStream)
+        ) {
             var loader = new RDBLoader(dataInputStream, storage);
             loader.load();
         } catch (IOException e) {

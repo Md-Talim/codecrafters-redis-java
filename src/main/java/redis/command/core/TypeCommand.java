@@ -2,8 +2,11 @@ package redis.command.core;
 
 import java.util.List;
 
+import redis.Redis;
+import redis.client.Client;
 import redis.command.Command;
 import redis.resp.type.BulkString;
+import redis.resp.type.RArray;
 import redis.resp.type.RValue;
 import redis.resp.type.SimpleError;
 import redis.resp.type.SimpleString;
@@ -14,12 +17,13 @@ public class TypeCommand implements Command {
 
     private final Storage storage;
 
-    public TypeCommand(Storage storage) {
-        this.storage = storage;
+    public TypeCommand(Redis redis) {
+        this.storage = redis.storage();
     }
 
     @Override
-    public RValue execute(List<RValue> args) {
+    public RValue execute(Client client, RArray command) {
+        List<RValue> args = command.getArgs();
         if (args.size() != 1) {
             return new SimpleError("ERR wrong number of arguments for 'type' command");
         }

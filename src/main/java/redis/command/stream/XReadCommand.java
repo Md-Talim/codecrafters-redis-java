@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+import redis.Redis;
+import redis.client.Client;
 import redis.command.Command;
 import redis.resp.type.BulkString;
 import redis.resp.type.RArray;
@@ -17,16 +19,18 @@ public class XReadCommand implements Command {
 
     private final Storage storage;
 
-    public XReadCommand(Storage storage) {
-        this.storage = storage;
+    public XReadCommand(Redis redis) {
+        this.storage = redis.storage();
     }
 
     @Override
-    public RValue execute(List<RValue> args) {
+    public RValue execute(Client client, RArray command) {
+        List<RValue> args = command.getArgs();
+
         record Query(String key, Identifier identifier) {
 
         }
-        List<Query> queries = new ArrayList<Query>();
+        List<Query> queries = new ArrayList<>();
         Duration timeout = null;
 
         int size = args.size();
@@ -77,7 +81,7 @@ public class XReadCommand implements Command {
             return new RArray(List.of(new RArray(entryResponse)));
         }
 
-        List<RValue> fullResponse = new ArrayList<RValue>();
+        List<RValue> fullResponse = new ArrayList<>();
         for (Query query : queries) {
             var key = query.key();
             var stream = (Stream) storage.get(key);
@@ -100,5 +104,4 @@ public class XReadCommand implements Command {
     public String name() {
         return "XREAD";
     }
-
 }

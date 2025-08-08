@@ -1,12 +1,11 @@
 package redis.command;
 
-import java.util.List;
-
+import redis.client.Client;
+import redis.resp.type.RArray;
 import redis.resp.type.RValue;
 
 public interface Command {
-
-    RValue execute(List<RValue> args);
+    RValue execute(Client client, RArray command);
 
     String name();
 }

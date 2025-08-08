@@ -5,16 +5,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.stream.Collectors;
 
+import redis.client.Client;
+import redis.client.ReplicaClient;
 import redis.configuration.Argument;
 import redis.configuration.Configuration;
-import redis.configuration.RemoteOption;
 import redis.rdb.RDBLoader;
-import redis.resp.Deserializer;
-import redis.resp.type.BulkString;
-import redis.resp.type.RArray;
 import redis.store.Storage;
 
 public class Main {
@@ -63,9 +60,9 @@ public class Main {
         }
 
         boolean isSlave = configuration.isSlave();
-        var masterPort = configuration.port().getArgumentAt(0, Integer.class).value();
+        Redis redis = new Redis(storage, configuration);
         if (isSlave) {
-            connectToMaster(configuration.replicaOf(), masterPort);
+            connectToMaster(redis);
         } else {
             loadRDBfile(storage, configuration);
         }
@@ -78,7 +75,7 @@ public class Main {
 
             while (true) {
                 final var socket = serverSocket.accept();
-                final var client = new Client(socket, storage, configuration);
+                final var client = new Client(socket, redis);
                 final var thread = threadFactory.newThread(client);
                 thread.start();
             }
@@ -98,69 +95,11 @@ public class Main {
         }
     }
 
-    private static void connectToMaster(RemoteOption replicaOf, int masterPort) {
-        final String host = replicaOf.hostArgument().value();
-        final int port = replicaOf.portArgument().value();
-        try (final var socket = new Socket(host, port)) {
-            final var inputStream = socket.getInputStream();
-            final var outputStream = socket.getOutputStream();
-            final var deserializer = new Deserializer(inputStream);
-
-            // Replica send PING command to master
-            {
-                System.out.println("replica: send PING");
-                final var pingCommand = new BulkString("PING");
-                outputStream.write(new RArray(List.of(pingCommand)).serialize());
-                var response = deserializer.read();
-                System.out.println("replica: received %s".formatted(response.toString()));
-            }
-
-            // Replica sends REPLCONF listening-port command
-            {
-                System.out.println("replica: send REPLCONF listening-port %d".formatted(masterPort));
-                var replConfCommand = new RArray(
-                        List.of(
-                                new BulkString("REPLCONF"),
-                                new BulkString("listening-port"),
-                                new BulkString(String.valueOf(masterPort))
-                        )
-                );
-                outputStream.write(replConfCommand.serialize());
-                var response = deserializer.read();
-                System.out.println("replica: received %s".formatted(response.toString()));
-            }
-
-            // Replica sends REPLCONF capa psync2
-            {
-                System.out.println("replica: send REPLCONF capa pysnc2");
-                var capaPsync = new RArray(
-                        List.of(
-                                new BulkString("REPLCONF"),
-                                new BulkString("capa"),
-                                new BulkString("psync2")
-                        )
-                );
-                outputStream.write(capaPsync.serialize());
-                var response = deserializer.read();
-                System.out.println("replica: received %s".formatted(response.toString()));
-            }
-
-            // Replica sends PSYNC to the master
-            {
-                System.out.println("replica: send PSYNC ? -1");
-                var psyncCommand = new RArray(
-                        List.of(
-                                new BulkString("PSYNC"),
-                                new BulkString("?"),
-                                new BulkString("-1")
-                        )
-                );
-                outputStream.write(psyncCommand.serialize());
-                var response = deserializer.read();
-                System.out.println("replica: received %s".formatted(response.toString()));
-            }
-        } catch (IOException e) {
-            System.out.println("IOException: " + e.getMessage());
-        }
+    private static void connectToMaster(Redis redis) throws IOException {
+        final var replicaOf = redis.configuration().replicaOf();
+        final var host = replicaOf.hostArgument().value();
+        final var port = replicaOf.portArgument().value();
+        final var socket = new Socket(host, port);
+        Thread.ofVirtual().start(new ReplicaClient(socket, redis));
     }
 }

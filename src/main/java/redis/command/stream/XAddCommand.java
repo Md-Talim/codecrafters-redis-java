@@ -2,9 +2,11 @@ package redis.command.stream;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-
+import redis.Redis;
+import redis.client.Client;
 import redis.command.Command;
 import redis.resp.type.BulkString;
+import redis.resp.type.RArray;
 import redis.resp.type.RValue;
 import redis.resp.type.SimpleError;
 import redis.store.CacheEntry;
@@ -17,31 +19,37 @@ public class XAddCommand implements Command {
 
     private final Storage storage;
 
-    public XAddCommand(Storage storage) {
-        this.storage = storage;
+    public XAddCommand(Redis redis) {
+        this.storage = redis.storage();
     }
 
     @Override
-    public RValue execute(List<RValue> args) {
+    public RValue execute(Client client, RArray command) {
+        List<RValue> args = command.getArgs();
+        if (args.size() < 3) {
+            return new SimpleError(
+                "ERR wrong number of arguments for 'xadd' command"
+            );
+        }
+
         String key = args.get(0).toString();
         Identifier id = Identifier.parse(args.get(1).toString());
 
         List<RValue> keyValues = args.subList(2, args.size());
-
         var newIdReference = new AtomicReference<UniqueIdentifier>();
         try {
             storage.append(
-                    key,
-                    Stream.class,
-                    () -> CacheEntry.permanent(new Stream()),
-                    (stream) -> {
-                        UniqueIdentifier newId = stream.add(id, keyValues);
-                        newIdReference.set(newId);
-                    }
+                key,
+                Stream.class,
+                () -> CacheEntry.permanent(new Stream()),
+                stream -> {
+                    UniqueIdentifier newId = stream.add(id, keyValues);
+                    newIdReference.set(newId);
+                }
             );
 
             return new BulkString(newIdReference.get().toString());
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             return new SimpleError(e.getMessage());
         }
     }

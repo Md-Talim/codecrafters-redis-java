@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import redis.Redis;
+import redis.client.Client;
 import redis.command.Command;
 import redis.configuration.Configuration;
 import redis.resp.type.BulkString;
@@ -15,12 +17,16 @@ public class ConfigCommand implements Command {
 
     private final Configuration configuration;
 
-    public ConfigCommand(Configuration configutaion) {
-        this.configuration = configutaion;
+    public ConfigCommand(Redis redis) {
+        this.configuration = redis.configuration();
     }
 
     @Override
-    public RValue execute(List<RValue> args) {
+    public RValue execute(Client client, RArray command) {
+        List<RValue> args = command.getArgs();
+        if (args.size() != 2) {
+            return new SimpleError("ERR wrong number of arguments for 'config' command");
+        }
         String action = args.get(0).toString();
         if (!"GET".equalsIgnoreCase(action)) {
             return new SimpleError("ERR unknown subcommand");

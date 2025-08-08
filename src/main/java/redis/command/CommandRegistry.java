@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
+import redis.Redis;
 import redis.command.core.ConfigCommand;
 import redis.command.core.EchoCommand;
 import redis.command.core.GetCommand;
@@ -19,28 +19,28 @@ import redis.command.replication.ReplConfCommand;
 import redis.command.stream.XAddCommand;
 import redis.command.stream.XRangeCommand;
 import redis.command.stream.XReadCommand;
-import redis.configuration.Configuration;
-import redis.store.Storage;
 
 public class CommandRegistry {
 
-    public static Map<String, Command> initializeCommands(Storage storage, Configuration configuration) {
+    public static Map<String, Command> initializeCommands(Redis redis) {
         List<Command> commandList = Arrays.asList(
-                new PingCommand(),
-                new EchoCommand(),
-                new SetCommand(storage),
-                new GetCommand(storage),
-                new ConfigCommand(configuration),
-                new KeysCommand(storage),
-                new TypeCommand(storage),
-                new XAddCommand(storage),
-                new XRangeCommand(storage),
-                new XReadCommand(storage),
-                new InfoCommand(configuration),
-                new ReplConfCommand(),
-                new PsyncCommand()
+            new PingCommand(),
+            new EchoCommand(),
+            new SetCommand(redis),
+            new GetCommand(redis),
+            new ConfigCommand(redis),
+            new KeysCommand(redis),
+            new TypeCommand(redis),
+            new XAddCommand(redis),
+            new XRangeCommand(redis),
+            new XReadCommand(redis),
+            new InfoCommand(redis),
+            new ReplConfCommand(),
+            new PsyncCommand(redis)
         );
 
-        return commandList.stream().collect(Collectors.toMap(Command::name, Function.identity()));
+        return commandList
+            .stream()
+            .collect(Collectors.toMap(Command::name, Function.identity()));
     }
 }

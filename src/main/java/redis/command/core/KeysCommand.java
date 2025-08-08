@@ -3,6 +3,8 @@ package redis.command.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import redis.Redis;
+import redis.client.Client;
 import redis.command.Command;
 import redis.resp.type.BulkString;
 import redis.resp.type.RArray;
@@ -14,12 +16,13 @@ public class KeysCommand implements Command {
 
     private final Storage storage;
 
-    public KeysCommand(Storage storage) {
-        this.storage = storage;
+    public KeysCommand(Redis redis) {
+        this.storage = redis.storage();
     }
 
     @Override
-    public RValue execute(List<RValue> args) {
+    public RValue execute(Client client, RArray command) {
+        List<RValue> args = command.getArgs();
         if (args.size() != 1) {
             return new SimpleError("ERR wrong number of arguments for 'keys' command");
         }
@@ -37,5 +40,4 @@ public class KeysCommand implements Command {
     public String name() {
         return "KEYS";
     }
-
 }
