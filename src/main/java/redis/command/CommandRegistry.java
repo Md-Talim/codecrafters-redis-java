@@ -38,7 +38,7 @@ public class CommandRegistry {
             new InfoCommand(redis),
             new ReplConfCommand(redis),
             new PsyncCommand(redis),
-            new WaitCommand()
+            new WaitCommand(redis)
         );
 
         return commandList
