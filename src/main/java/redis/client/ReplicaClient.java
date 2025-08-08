@@ -44,7 +44,13 @@ public class ReplicaClient implements Runnable {
                     continue;
                 }
 
-                System.out.println(response.toString());
+                if (!response.ignorableByReplica()) {
+                    System.out.println(
+                        "replica: responding: %s".formatted(response.value())
+                    );
+                    outputStream.write(response.value().serialize());
+                    outputStream.flush();
+                }
             }
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
