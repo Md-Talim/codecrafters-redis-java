@@ -23,4 +23,8 @@ public class RInteger implements RValue {
         }
         return baos.toByteArray();
     }
+
+    public int value() {
+        return integer;
+    }
 }

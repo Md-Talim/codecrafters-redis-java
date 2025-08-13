@@ -9,6 +9,7 @@ import redis.Redis;
 import redis.command.core.ConfigCommand;
 import redis.command.core.EchoCommand;
 import redis.command.core.GetCommand;
+import redis.command.core.INCRCommand;
 import redis.command.core.InfoCommand;
 import redis.command.core.KeysCommand;
 import redis.command.core.PingCommand;
@@ -38,7 +39,8 @@ public class CommandRegistry {
             new InfoCommand(redis),
             new ReplConfCommand(redis),
             new PsyncCommand(redis),
-            new WaitCommand(redis)
+            new WaitCommand(redis),
+            new INCRCommand(redis.storage())
         );
 
         return commandList
