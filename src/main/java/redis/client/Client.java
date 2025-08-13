@@ -1,7 +1,5 @@
 package redis.client;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -10,9 +8,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import redis.Redis;
+import redis.command.CommandResponse;
 import redis.resp.Deserializer;
+import redis.resp.type.BulkString;
+import redis.resp.type.EmptyRDBFile;
 import redis.resp.type.RValue;
 import redis.util.TrackedInputStream;
+import redis.util.TrackedOutputStream;
 
 public class Client implements Runnable {
 
@@ -24,7 +26,9 @@ public class Client implements Runnable {
     private boolean connected;
     private Consumer<Client> disconnectedListener;
     private boolean replicate;
-    private final BlockingQueue<RValue> pendingCommands =
+    private long offset = 0;
+    private Consumer<Object> replicateConsumer;
+    private final BlockingQueue<CommandResponse> pendingCommands =
         new ArrayBlockingQueue<>(128, true);
 
     public Client(Socket socket, Redis evaluator) throws IOException {
@@ -40,9 +44,9 @@ public class Client implements Runnable {
 
         try (socket) {
             final var inputStream = new TrackedInputStream(
-                new BufferedInputStream(socket.getInputStream())
+                socket.getInputStream()
             );
-            final var outputStream = new BufferedOutputStream(
+            final var outputStream = new TrackedOutputStream(
                 socket.getOutputStream()
             );
             final var deserializer = new Deserializer(inputStream);
@@ -66,6 +70,12 @@ public class Client implements Runnable {
                 outputStream.flush();
             }
 
+            if (replicate) {
+                Thread.ofVirtual().start(() ->
+                    handleReplicaResponses(deserializer)
+                );
+            }
+
             while (replicate && socket.isConnected()) {
                 final var command = pendingCommands.poll(1, TimeUnit.MINUTES);
                 if (command == null) {
@@ -76,9 +86,18 @@ public class Client implements Runnable {
                     "%d: send command: %s".formatted(id, command)
                 );
 
-                if (socket.isConnected()) {
-                    outputStream.write(command.serialize());
-                    outputStream.flush();
+                outputStream.write(command.value().serialize());
+                outputStream.flush();
+
+                if (
+                    command.value() instanceof BulkString ||
+                    command.value() instanceof EmptyRDBFile
+                ) {
+                    offset = 0;
+                    System.out.println("%d: reset offset".formatted(id));
+                } else {
+                    offset += outputStream.count();
+                    System.out.println("%d: offset: %d".formatted(id, offset));
                 }
             }
         } catch (IOException e) {
@@ -103,9 +122,15 @@ public class Client implements Runnable {
         this.replicate = replicate;
     }
 
-    public void command(RValue value) {
-        System.out.println("%d: queue command: %s".formatted(id, value));
-        pendingCommands.add(value);
+    public void command(CommandResponse pendingCommand) {
+        boolean inserted = pendingCommands.offer(pendingCommand);
+
+        if (!inserted) {
+            System.out.println(
+                "%d: retry queue command: %s".formatted(id, pendingCommand)
+            );
+            pendingCommands.add(pendingCommand);
+        }
     }
 
     public boolean onDisconnect(Consumer<Client> listener) {
@@ -120,6 +145,32 @@ public class Client implements Runnable {
 
             disconnectedListener = listener;
             return true;
+        }
+    }
+
+    public void setReplicateConsumer(Consumer<Object> replicateConsumer) {
+        this.replicateConsumer = replicateConsumer;
+    }
+
+    public long getOffset() {
+        return offset;
+    }
+
+    private void handleReplicaResponses(Deserializer deserializer) {
+        try {
+            while (socket.isConnected()) {
+                RValue request = deserializer.read();
+                if (request == null) {
+                    break;
+                }
+
+                var consumer = replicateConsumer;
+                if (consumer != null) {
+                    consumer.accept(request);
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("IOException " + e.getMessage());
         }
     }
 }

@@ -53,9 +53,7 @@ public class ReplicaClient implements Runnable {
                 }
 
                 if (!response.ignorableByReplica()) {
-                    System.out.println(
-                        "replica: responding: %s".formatted(response.value())
-                    );
+                    System.out.println("replica: responding: %s".formatted(response.value()));
                     outputStream.write(response.value().serialize());
                     outputStream.flush();
                 }
@@ -68,11 +66,7 @@ public class ReplicaClient implements Runnable {
     private void handshake() throws IOException {
         send(List.of(new BulkString("PING")));
 
-        var masterPort = redis
-            .configuration()
-            .port()
-            .getArgumentAt(0, Integer.class)
-            .value();
+        var masterPort = redis.configuration().port().getArgumentAt(0, Integer.class).value();
 
         send(
             List.of(
@@ -82,21 +76,9 @@ public class ReplicaClient implements Runnable {
             )
         );
 
-        send(
-            List.of(
-                new BulkString("REPLCONF"),
-                new BulkString("capa"),
-                new BulkString("psync2")
-            )
-        );
+        send(List.of(new BulkString("REPLCONF"), new BulkString("capa"), new BulkString("psync2")));
 
-        send(
-            List.of(
-                new BulkString("PSYNC"),
-                new BulkString("?"),
-                new BulkString("-1")
-            )
-        );
+        send(List.of(new BulkString("PSYNC"), new BulkString("?"), new BulkString("-1")));
 
         var rdb = deserializer.readRDB();
         redis.storage().clear();

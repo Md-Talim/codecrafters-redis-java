@@ -46,9 +46,11 @@ public class PsyncCommand implements Command {
         }
 
         client.command(
-            new SimpleString("FULLRESYNC %s 0".formatted(masterReplId))
+            new CommandResponse(
+                new SimpleString("FULLRESYNC %s 0".formatted(masterReplId))
+            )
         );
-        client.command(new EmptyRDBFile());
+        client.command(new CommandResponse(new EmptyRDBFile()));
 
         return null;
     }

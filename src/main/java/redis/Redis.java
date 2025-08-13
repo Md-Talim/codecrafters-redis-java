@@ -45,7 +45,7 @@ public class Redis {
 
     public void propagate(RArray command) {
         for (Client replica : replicas) {
-            replica.command(command);
+            replica.command(new CommandResponse(command));
         }
     }
 
