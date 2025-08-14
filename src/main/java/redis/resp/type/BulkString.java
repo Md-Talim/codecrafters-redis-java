@@ -3,10 +3,15 @@ package redis.resp.type;
 import java.io.ByteArrayOutputStream;
 
 public class BulkString implements RValue {
+
     private final String value;
 
     public BulkString(String value) {
         this.value = value;
+    }
+
+    public BulkString(int value) {
+        this.value = String.valueOf(value);
     }
 
     public String getValue() {
@@ -25,7 +30,8 @@ public class BulkString implements RValue {
         }
 
         byte[] valueBytes = value.getBytes();
-        String header = FirstByte.BulkString + Integer.toString(valueBytes.length) + CRLF;
+        String header =
+            FirstByte.BulkString + Integer.toString(valueBytes.length) + CRLF;
         byte[] headerBytes = header.getBytes();
 
         ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();

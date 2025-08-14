@@ -23,10 +23,16 @@ public class INCRCommand implements Command {
         String key = args.get(0).toString();
         var value = storage.get(key);
 
+        if (value == null) {
+            storage.set(key, new BulkString("1"));
+            return new CommandResponse(new RInteger(1));
+        }
+
         if (value instanceof BulkString string) {
-            var response = new RInteger(Integer.valueOf(string.getValue()) + 1);
-            storage.set(key, response);
-            return new CommandResponse(response);
+            int previousValue = Integer.valueOf(string.getValue());
+            int newValue = previousValue + 1;
+            storage.set(key, new BulkString(newValue));
+            return new CommandResponse(new RInteger(newValue));
         }
 
         return new CommandResponse(new SimpleError(""));

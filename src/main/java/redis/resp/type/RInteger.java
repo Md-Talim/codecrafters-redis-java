@@ -5,10 +5,10 @@ import java.io.IOException;
 
 public class RInteger implements RValue {
 
-    private final int integer;
+    private final String value;
 
-    public RInteger(int value) {
-        this.integer = value;
+    public RInteger(Object value) {
+        this.value = String.valueOf(value);
     }
 
     @Override
@@ -16,7 +16,7 @@ public class RInteger implements RValue {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         baos.write(FirstByte.Integer);
         try {
-            baos.write(String.valueOf(integer).getBytes());
+            baos.write(value.getBytes());
             baos.write(CRLF.getBytes());
         } catch (IOException e) {
             throw new RuntimeException("Error serializing integer", e);
@@ -24,7 +24,7 @@ public class RInteger implements RValue {
         return baos.toByteArray();
     }
 
-    public int value() {
-        return integer;
+    public String value() {
+        return value;
     }
 }
