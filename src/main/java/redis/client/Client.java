@@ -185,4 +185,8 @@ public class Client implements Runnable {
     public void beginTransaction() {
         queuedCommands = new ArrayList<>();
     }
+
+    public void endTransaction() {
+        queuedCommands = null;
+    }
 }
