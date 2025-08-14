@@ -178,6 +178,17 @@ public class Client implements Runnable {
         }
     }
 
+    public List<Command> getQueuedCommands() {
+        return queuedCommands;
+    }
+
+    public void queueCommand(Command command) {
+        if (!isInTransaction()) {
+            return;
+        }
+        queuedCommands.add(command);
+    }
+
     public boolean isInTransaction() {
         return queuedCommands != null;
     }

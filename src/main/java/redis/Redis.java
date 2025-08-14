@@ -13,6 +13,7 @@ import redis.configuration.Configuration;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
 import redis.resp.type.SimpleError;
+import redis.resp.type.SimpleString;
 import redis.store.Storage;
 
 public class Redis {
@@ -82,6 +83,14 @@ public class Redis {
         }
 
         Command command = commands.get(array.getCommandName());
+
+        if (client instanceof Client) {
+            if (client.isInTransaction() && command.isQueueable()) {
+                client.queueCommand(command);
+                return new CommandResponse(new SimpleString("QUEUED"));
+            }
+        }
+
         if (command != null) {
             return command.execute(client, array);
         }

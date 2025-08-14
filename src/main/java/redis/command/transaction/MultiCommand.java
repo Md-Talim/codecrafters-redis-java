@@ -26,4 +26,9 @@ public class MultiCommand implements Command {
     public String name() {
         return "MULTI";
     }
+
+    @Override
+    public boolean isQueueable() {
+        return false;
+    }
 }

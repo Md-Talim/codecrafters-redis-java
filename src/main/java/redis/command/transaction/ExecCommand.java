@@ -27,6 +27,11 @@ public class ExecCommand implements Command {
     }
 
     @Override
+    public boolean isQueueable() {
+        return false;
+    }
+
+    @Override
     public String name() {
         return "EXEC";
     }
