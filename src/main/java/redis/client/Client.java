@@ -2,12 +2,15 @@ package redis.client;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import redis.Redis;
+import redis.command.Command;
 import redis.command.CommandResponse;
 import redis.resp.Deserializer;
 import redis.resp.type.BulkString;
@@ -30,6 +33,7 @@ public class Client implements Runnable {
     private Consumer<Object> replicateConsumer;
     private final BlockingQueue<CommandResponse> pendingCommands =
         new ArrayBlockingQueue<>(128, true);
+    private List<Command> queuedCommands;
 
     public Client(Socket socket, Redis evaluator) throws IOException {
         this.id = ID_INTEGER.incrementAndGet();
@@ -172,5 +176,13 @@ public class Client implements Runnable {
         } catch (IOException e) {
             System.out.println("IOException " + e.getMessage());
         }
+    }
+
+    public boolean isInTransaction() {
+        return queuedCommands != null;
+    }
+
+    public void beginTransaction() {
+        queuedCommands = new ArrayList<>();
     }
 }

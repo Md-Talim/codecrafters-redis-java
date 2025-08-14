@@ -7,23 +7,20 @@ import redis.resp.type.RArray;
 import redis.resp.type.SimpleError;
 import redis.resp.type.SimpleString;
 
-public class MultiCommand implements Command {
+public class ExecCommand implements Command {
 
-    private final String ALREADY_IN_TRANSCATION = "ERR already in transaction";
+    private final String EXEC_WITHOUT_MULTI = "ERR EXEC without MULTI";
 
     @Override
     public CommandResponse execute(Client client, RArray command) {
-        if (client.isInTransaction()) {
-            return new CommandResponse(new SimpleError(ALREADY_IN_TRANSCATION));
+        if (!client.isInTransaction()) {
+            return new CommandResponse(new SimpleError(EXEC_WITHOUT_MULTI));
         }
-
-        client.beginTransaction();
-
         return new CommandResponse(new SimpleString("OK"));
     }
 
     @Override
     public String name() {
-        return "MULTI";
+        return "EXEC";
     }
 }
