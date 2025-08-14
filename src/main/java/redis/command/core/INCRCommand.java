@@ -12,6 +12,8 @@ import redis.store.Storage;
 public class INCRCommand implements Command {
 
     private final Storage storage;
+    private final String NOT_INTEGER =
+        "ERR value is not an integer or out of range";
 
     public INCRCommand(Storage storage) {
         this.storage = storage;
@@ -29,10 +31,14 @@ public class INCRCommand implements Command {
         }
 
         if (value instanceof BulkString string) {
-            int previousValue = Integer.valueOf(string.getValue());
-            int newValue = previousValue + 1;
-            storage.set(key, new BulkString(newValue));
-            return new CommandResponse(new RInteger(newValue));
+            try {
+                int previousValue = Integer.valueOf(string.getValue());
+                int newValue = previousValue + 1;
+                storage.set(key, new BulkString(newValue));
+                return new CommandResponse(new RInteger(newValue));
+            } catch (NumberFormatException e) {
+                return new CommandResponse(new SimpleError(NOT_INTEGER));
+            }
         }
 
         return new CommandResponse(new SimpleError(""));
