@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class RArray implements RValue {
+
     private final List<RValue> items;
 
     public RArray(List<RValue> items) {
@@ -35,6 +36,14 @@ public class RArray implements RValue {
 
     public List<RValue> getArgs() {
         return items.subList(1, items.size());
+    }
+
+    public void addAll(List<RValue> newItems) {
+        items.addAll(newItems);
+    }
+
+    public int size() {
+        return items.size();
     }
 
     @Override

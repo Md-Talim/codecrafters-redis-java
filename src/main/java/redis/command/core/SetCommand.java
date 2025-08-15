@@ -33,7 +33,7 @@ public class SetCommand implements Command {
         }
 
         String key = args.get(0).toString();
-        Object value = args.get(1);
+        RValue value = args.get(1);
 
         if (args.size() == 4) {
             String setArg = args.get(2).toString();

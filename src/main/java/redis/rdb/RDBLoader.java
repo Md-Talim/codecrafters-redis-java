@@ -8,6 +8,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import redis.resp.type.BulkString;
+import redis.resp.type.RValue;
 import redis.store.CacheEntry;
 import redis.store.Storage;
 
@@ -88,7 +90,7 @@ public class RDBLoader {
                     }
 
                     String key = readString();
-                    String value = readString();
+                    RValue value = new BulkString(readString());
 
                     if (expiresAt != null) {
                         long millisecondsFromNow =

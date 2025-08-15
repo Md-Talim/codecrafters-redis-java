@@ -31,7 +31,7 @@ public class GetCommand implements Command {
         }
 
         String key = args.get(0).toString();
-        Object value = storage.get(key);
+        RValue value = storage.get(key);
 
         return new CommandResponse(
             new BulkString(value == null ? null : value.toString())

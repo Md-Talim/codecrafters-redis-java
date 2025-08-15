@@ -7,29 +7,35 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import redis.resp.type.RValue;
 import redis.stream.identifier.Identifier;
 import redis.stream.identifier.MillisecondsIdentifier;
 import redis.stream.identifier.UniqueIdentifier;
 import redis.stream.identifier.WildcardIdentifier;
 
-public class Stream {
+public class Stream implements RValue {
+
     private final List<StreamEntry> entries = new ArrayList<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final Condition dataCondition = lock.writeLock().newCondition();
     private UniqueIdentifier lastIdentifier;
 
-    private final String XADD_ID_EQUAL_OR_SMALLER = "ERR The ID specified in XADD is equal or smaller than the target stream top item";
-    private final String XADD_ID_GREATER_THAN_ZERO = "ERR The ID specified in XADD must be greater than 0-0";
+    private final String XADD_ID_EQUAL_OR_SMALLER =
+        "ERR The ID specified in XADD is equal or smaller than the target stream top item";
+    private final String XADD_ID_GREATER_THAN_ZERO =
+        "ERR The ID specified in XADD must be greater than 0-0";
 
     public UniqueIdentifier add(Identifier id, List<RValue> content) {
         lock.writeLock().lock();
         try {
             var unique = switch (id) {
-                case MillisecondsIdentifier identifier -> getIdentifier(identifier.milliseconds());
+                case MillisecondsIdentifier identifier -> getIdentifier(
+                    identifier.milliseconds()
+                );
                 case UniqueIdentifier identifier -> identifier;
-                case WildcardIdentifier _ -> getIdentifier(System.currentTimeMillis());
+                case WildcardIdentifier _ -> getIdentifier(
+                    System.currentTimeMillis()
+                );
             };
 
             if (unique.milliseconds() == 0 && unique.sequenceNumber() == 0) {
@@ -97,10 +103,11 @@ public class Stream {
                 dataCondition.await();
                 return true;
             }
-            return dataCondition.await(timeout.toMillis(), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException ignored) {
-            ;
-        } finally {
+            return dataCondition.await(
+                timeout.toMillis(),
+                TimeUnit.MILLISECONDS
+            );
+        } catch (InterruptedException ignored) {} finally {
             lock.writeLock().unlock();
         }
         return false;
@@ -140,7 +147,10 @@ public class Stream {
             if (!entries.isEmpty()) {
                 var last = entries.getLast().identifier();
                 if (last.milliseconds() == milliseconds) {
-                    return new UniqueIdentifier(milliseconds, last.sequenceNumber() + 1);
+                    return new UniqueIdentifier(
+                        milliseconds,
+                        last.sequenceNumber() + 1
+                    );
                 }
             }
 
@@ -159,5 +169,12 @@ public class Stream {
 
         UniqueIdentifier last = entries.getLast().identifier();
         return identifier.compareTo(last) > 0;
+    }
+
+    @Override
+    public byte[] serialize() {
+        throw new UnsupportedOperationException(
+            "Stream data type is not directly serializable"
+        );
     }
 }

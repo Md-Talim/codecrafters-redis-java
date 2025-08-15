@@ -6,29 +6,30 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import redis.resp.type.RValue;
 
 public class Storage {
 
-    private final Map<String, CacheEntry<Object>> map =
+    private final Map<String, CacheEntry<RValue>> map =
         new ConcurrentHashMap<>();
 
     public void clear() {
         map.clear();
     }
 
-    public void set(String key, Object value) {
+    public void set(String key, RValue value) {
         map.put(key, CacheEntry.permanent(value));
     }
 
-    public void set(String key, Object value, long milliseconds) {
+    public void set(String key, RValue value, long milliseconds) {
         map.put(key, CacheEntry.expiringIn(value, milliseconds));
     }
 
-    public void put(String key, CacheEntry<Object> value) {
+    public void put(String key, CacheEntry<RValue> value) {
         map.put(key, value);
     }
 
-    public Object get(String key) {
+    public RValue get(String key) {
         var expiry = map.computeIfPresent(key, (_, value) -> {
             if (value.isExpired()) {
                 return null;
@@ -62,7 +63,7 @@ public class Storage {
             }
 
             if (expiry == null) {
-                expiry = (CacheEntry<Object>) creator.get();
+                expiry = (CacheEntry<RValue>) creator.get();
             }
 
             appender.accept((T) expiry.value());

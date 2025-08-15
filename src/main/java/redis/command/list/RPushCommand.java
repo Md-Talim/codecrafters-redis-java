@@ -1,6 +1,5 @@
 package redis.command.list;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import redis.client.Client;
@@ -8,6 +7,7 @@ import redis.command.Command;
 import redis.command.CommandResponse;
 import redis.resp.type.RArray;
 import redis.resp.type.RInteger;
+import redis.resp.type.RValue;
 import redis.resp.type.SimpleError;
 import redis.store.Storage;
 
@@ -23,28 +23,28 @@ public class RPushCommand implements Command {
 
     @Override
     public CommandResponse execute(Client client, RArray command) {
-        var args = command.getArgs();
+        List<RValue> args = command.getArgs();
+        List<RValue> newItems = args
+            .stream()
+            .skip(1)
+            .collect(Collectors.toList());
         String listKey = args.get(0).toString();
-        var existingEntry = storage.get(listKey);
+        RValue existingEntry = storage.get(listKey);
 
         if (existingEntry == null) {
-            var newList = new ArrayList<Object>();
-            var values = args.stream().skip(1).collect(Collectors.toList());
-            newList.addAll(values);
+            RArray newList = new RArray(newItems);
             storage.set(listKey, newList);
-            return new CommandResponse(new RInteger(newList.size()));
+            return new CommandResponse(new RInteger(args.size() - 1));
         }
 
-        if (!(existingEntry instanceof List<?>)) {
+        if (!(existingEntry instanceof RArray)) {
             return new CommandResponse(new SimpleError(WRONG_OPERATION));
         }
 
-        @SuppressWarnings("unchecked")
-        List<Object> objectList = (List<Object>) existingEntry;
-        var values = args.stream().skip(1).collect(Collectors.toList());
-        objectList.addAll(values);
-        storage.set(listKey, objectList);
-        return new CommandResponse(new RInteger(objectList.size()));
+        RArray existingList = (RArray) existingEntry;
+        existingList.addAll(newItems);
+        storage.set(listKey, existingList);
+        return new CommandResponse(new RInteger(existingList.size()));
     }
 
     @Override

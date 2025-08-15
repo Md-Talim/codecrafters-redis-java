@@ -24,6 +24,11 @@ public class RInteger implements RValue {
         return baos.toByteArray();
     }
 
+    @Override
+    public String toString() {
+        return value;
+    }
+
     public String value() {
         return value;
     }
