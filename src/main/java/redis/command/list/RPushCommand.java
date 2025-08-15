@@ -1,6 +1,7 @@
 package redis.command.list;
 
 import java.util.ArrayList;
+import java.util.List;
 import redis.client.Client;
 import redis.command.Command;
 import redis.command.CommandResponse;
@@ -34,8 +35,12 @@ public class RPushCommand implements Command {
             return new CommandResponse(new RInteger(1));
         }
 
-        if (existingEntry instanceof ArrayList list) {
-            return new CommandResponse(new RInteger(list.size()));
+        if (existingEntry instanceof List<?> list) {
+            @SuppressWarnings("unchecked")
+            List<Object> objectList = (List<Object>) list;
+            objectList.add(value);
+            storage.set(listKey, objectList);
+            return new CommandResponse(new RInteger(objectList.size()));
         }
 
         return new CommandResponse(new SimpleError(WRONG_OPERATION));
