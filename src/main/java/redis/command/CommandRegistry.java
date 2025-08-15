@@ -21,6 +21,7 @@ import redis.command.replication.WaitCommand;
 import redis.command.stream.XAddCommand;
 import redis.command.stream.XRangeCommand;
 import redis.command.stream.XReadCommand;
+import redis.command.transaction.DiscardCommand;
 import redis.command.transaction.ExecCommand;
 import redis.command.transaction.MultiCommand;
 
@@ -44,7 +45,8 @@ public class CommandRegistry {
             new WaitCommand(redis),
             new INCRCommand(redis.storage()),
             new MultiCommand(),
-            new ExecCommand()
+            new ExecCommand(),
+            new DiscardCommand()
         );
 
         return commandList
