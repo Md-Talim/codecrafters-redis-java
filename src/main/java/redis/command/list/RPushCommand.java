@@ -2,6 +2,7 @@ package redis.command.list;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import redis.client.Client;
 import redis.command.Command;
 import redis.command.CommandResponse;
@@ -24,26 +25,26 @@ public class RPushCommand implements Command {
     public CommandResponse execute(Client client, RArray command) {
         var args = command.getArgs();
         String listKey = args.get(0).toString();
-        String value = args.get(1).toString();
-
         var existingEntry = storage.get(listKey);
 
         if (existingEntry == null) {
             var newList = new ArrayList<Object>();
-            newList.add(value);
+            var values = args.stream().skip(1).collect(Collectors.toList());
+            newList.addAll(values);
             storage.set(listKey, newList);
-            return new CommandResponse(new RInteger(1));
+            return new CommandResponse(new RInteger(newList.size()));
         }
 
-        if (existingEntry instanceof List<?> list) {
-            @SuppressWarnings("unchecked")
-            List<Object> objectList = (List<Object>) list;
-            objectList.add(value);
-            storage.set(listKey, objectList);
-            return new CommandResponse(new RInteger(objectList.size()));
+        if (!(existingEntry instanceof List<?>)) {
+            return new CommandResponse(new SimpleError(WRONG_OPERATION));
         }
 
-        return new CommandResponse(new SimpleError(WRONG_OPERATION));
+        @SuppressWarnings("unchecked")
+        List<Object> objectList = (List<Object>) existingEntry;
+        var values = args.stream().skip(1).collect(Collectors.toList());
+        objectList.addAll(values);
+        storage.set(listKey, objectList);
+        return new CommandResponse(new RInteger(objectList.size()));
     }
 
     @Override
