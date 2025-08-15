@@ -19,7 +19,15 @@ public class ExecCommand implements Command {
             return new CommandResponse(new SimpleError(EXEC_WITHOUT_MULTI));
         }
 
+        List<QueuedCommand> queuedCommands = client.getQueuedCommands();
         List<RValue> responses = new ArrayList<>();
+
+        for (var queued : queuedCommands) {
+            CommandResponse response = queued
+                .command()
+                .execute(client, queued.args());
+            responses.add(response.value());
+        }
 
         client.endTransaction();
 

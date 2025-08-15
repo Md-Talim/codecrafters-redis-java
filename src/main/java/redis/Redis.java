@@ -84,9 +84,9 @@ public class Redis {
 
         Command command = commands.get(array.getCommandName());
 
-        if (client instanceof Client) {
+        if (client != null) {
             if (client.isInTransaction() && command.isQueueable()) {
-                client.queueCommand(command);
+                client.queueCommand(command, array);
                 return new CommandResponse(new SimpleString("QUEUED"));
             }
         }

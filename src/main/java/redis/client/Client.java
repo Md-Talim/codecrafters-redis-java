@@ -12,9 +12,11 @@ import java.util.function.Consumer;
 import redis.Redis;
 import redis.command.Command;
 import redis.command.CommandResponse;
+import redis.command.transaction.QueuedCommand;
 import redis.resp.Deserializer;
 import redis.resp.type.BulkString;
 import redis.resp.type.EmptyRDBFile;
+import redis.resp.type.RArray;
 import redis.resp.type.RValue;
 import redis.util.TrackedInputStream;
 import redis.util.TrackedOutputStream;
@@ -33,7 +35,7 @@ public class Client implements Runnable {
     private Consumer<Object> replicateConsumer;
     private final BlockingQueue<CommandResponse> pendingCommands =
         new ArrayBlockingQueue<>(128, true);
-    private List<Command> queuedCommands;
+    private List<QueuedCommand> queuedCommands;
 
     public Client(Socket socket, Redis evaluator) throws IOException {
         this.id = ID_INTEGER.incrementAndGet();
@@ -178,15 +180,15 @@ public class Client implements Runnable {
         }
     }
 
-    public List<Command> getQueuedCommands() {
+    public List<QueuedCommand> getQueuedCommands() {
         return queuedCommands;
     }
 
-    public void queueCommand(Command command) {
+    public void queueCommand(Command command, RArray raw) {
         if (!isInTransaction()) {
             return;
         }
-        queuedCommands.add(command);
+        queuedCommands.add(new QueuedCommand(command, raw));
     }
 
     public boolean isInTransaction() {
