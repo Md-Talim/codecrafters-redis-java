@@ -15,6 +15,7 @@ import redis.command.core.KeysCommand;
 import redis.command.core.PingCommand;
 import redis.command.core.SetCommand;
 import redis.command.core.TypeCommand;
+import redis.command.list.RPushCommand;
 import redis.command.replication.PsyncCommand;
 import redis.command.replication.ReplConfCommand;
 import redis.command.replication.WaitCommand;
@@ -24,10 +25,12 @@ import redis.command.stream.XReadCommand;
 import redis.command.transaction.DiscardCommand;
 import redis.command.transaction.ExecCommand;
 import redis.command.transaction.MultiCommand;
+import redis.store.Storage;
 
 public class CommandRegistry {
 
     public static Map<String, Command> initializeCommands(Redis redis) {
+        Storage storage = redis.storage();
         List<Command> commandList = Arrays.asList(
             new PingCommand(),
             new EchoCommand(),
@@ -43,10 +46,11 @@ public class CommandRegistry {
             new ReplConfCommand(redis),
             new PsyncCommand(redis),
             new WaitCommand(redis),
-            new INCRCommand(redis.storage()),
+            new INCRCommand(storage),
             new MultiCommand(),
             new ExecCommand(),
-            new DiscardCommand()
+            new DiscardCommand(),
+            new RPushCommand(storage)
         );
 
         return commandList
