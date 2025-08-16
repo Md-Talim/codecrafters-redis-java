@@ -15,6 +15,7 @@ import redis.command.core.KeysCommand;
 import redis.command.core.PingCommand;
 import redis.command.core.SetCommand;
 import redis.command.core.TypeCommand;
+import redis.command.list.LRangeCommand;
 import redis.command.list.RPushCommand;
 import redis.command.replication.PsyncCommand;
 import redis.command.replication.ReplConfCommand;
@@ -50,7 +51,8 @@ public class CommandRegistry {
             new MultiCommand(),
             new ExecCommand(),
             new DiscardCommand(),
-            new RPushCommand(storage)
+            new RPushCommand(storage),
+            new LRangeCommand(storage)
         );
 
         return commandList

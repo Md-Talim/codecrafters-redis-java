@@ -46,6 +46,10 @@ public class RArray implements RValue {
         return items.size();
     }
 
+    public List<RValue> range(int start, int stop) {
+        return items.subList(start, stop + 1);
+    }
+
     @Override
     public byte[] serialize() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
