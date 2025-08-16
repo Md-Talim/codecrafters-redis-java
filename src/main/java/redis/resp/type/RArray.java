@@ -42,6 +42,10 @@ public class RArray implements RValue {
         items.addAll(newItems);
     }
 
+    public void addAll(int index, List<RValue> newItems) {
+        items.addAll(index, newItems);
+    }
+
     public int size() {
         return items.size();
     }
