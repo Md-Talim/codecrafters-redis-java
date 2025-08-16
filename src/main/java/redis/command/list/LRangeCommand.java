@@ -32,6 +32,13 @@ public class LRangeCommand implements Command {
         RArray list = (RArray) value;
         int size = list.size();
 
+        if (start < 0) {
+            start = (size + start) < 0 ? 0 : (size + start);
+        }
+        if (stop < 0) {
+            stop = size + stop;
+        }
+
         if (start >= size || start > stop) {
             return new CommandResponse(new RArray(new ArrayList<>()));
         } else if (stop >= size) {
