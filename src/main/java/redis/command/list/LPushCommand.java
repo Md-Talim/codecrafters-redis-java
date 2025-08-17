@@ -2,6 +2,7 @@ package redis.command.list;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import redis.Redis;
 import redis.client.Client;
 import redis.command.Command;
 import redis.command.CommandResponse;
@@ -13,12 +14,14 @@ import redis.store.Storage;
 
 public class LPushCommand implements Command {
 
+    private final Redis redis;
     private final Storage storage;
     private final String WRONG_OPERATION =
         "WRONGTYPE Operation against a key holding the wrong kind of value";
 
-    public LPushCommand(Storage storage) {
-        this.storage = storage;
+    public LPushCommand(Redis redis) {
+        this.redis = redis;
+        this.storage = redis.storage();
     }
 
     @Override
@@ -45,6 +48,9 @@ public class LPushCommand implements Command {
         RArray existingList = (RArray) existingEntry;
         existingList.addAll(0, newItems);
         storage.set(listKey, existingList);
+
+        redis.notifyKey(listKey);
+
         return new CommandResponse(new RInteger(existingList.size()));
     }
 

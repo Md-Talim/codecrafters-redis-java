@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 import redis.client.Client;
 import redis.command.Command;
 import redis.command.CommandRegistry;
@@ -25,6 +28,8 @@ public class Redis {
         new ArrayList<>()
     );
     private AtomicLong replicationOffset = new AtomicLong();
+    private final ReentrantLock lock = new ReentrantLock(true);
+    private final Map<String, Condition> conditions = new ConcurrentHashMap<>();
 
     public Redis(Storage storage, Configuration configuration) {
         this.storage = storage;
@@ -96,5 +101,39 @@ public class Redis {
         }
 
         return null;
+    }
+
+    public RValue awaitKey(String key) {
+        Condition condition = conditions.computeIfAbsent(key, _ ->
+            lock.newCondition()
+        );
+
+        try {
+            lock.lock();
+
+            condition.await();
+
+            return storage.get(key);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            lock.unlock();
+        }
+
+        return null;
+    }
+
+    public void notifyKey(String key) {
+        Condition condition = conditions.get(key);
+        if (condition == null) {
+            return;
+        }
+
+        lock.lock();
+        try {
+            condition.signal();
+        } finally {
+            lock.unlock();
+        }
     }
 }

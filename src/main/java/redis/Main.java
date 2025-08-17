@@ -6,7 +6,6 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Collectors;
-
 import redis.client.Client;
 import redis.client.ReplicaClient;
 import redis.configuration.Argument;
@@ -16,7 +15,8 @@ import redis.store.Storage;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args)
+        throws IOException, InterruptedException {
         final var threadFactory = Thread.ofVirtual().factory();
         final var storage = new Storage();
         final var configuration = new Configuration();
@@ -51,12 +51,17 @@ public class Main {
         }
 
         for (final var option : configuration.options()) {
-            final var arguments = option.arguments()
-                    .stream()
-                    .map((argument) -> "%s=`%s`".formatted(argument.key(), argument.value()))
-                    .collect(Collectors.joining(", "));
+            final var arguments = option
+                .arguments()
+                .stream()
+                .map(argument ->
+                    "%s=`%s`".formatted(argument.key(), argument.value())
+                )
+                .collect(Collectors.joining(", "));
 
-            System.out.println("configuration: %s(%s)".formatted(option.name(), arguments));
+            System.out.println(
+                "configuration: %s(%s)".formatted(option.name(), arguments)
+            );
         }
 
         boolean isSlave = configuration.isSlave();
@@ -67,7 +72,10 @@ public class Main {
             loadRDBfile(storage, configuration);
         }
 
-        final int port = configuration.port().getArgumentAt(0, Integer.class).value();
+        final int port = configuration
+            .port()
+            .getArgumentAt(0, Integer.class)
+            .value();
         System.out.println("port: %s".formatted(port));
 
         try (final var serverSocket = new ServerSocket(port)) {
@@ -78,15 +86,23 @@ public class Main {
                 final var client = new Client(socket, redis);
                 final var thread = threadFactory.newThread(client);
                 thread.start();
+                Thread.sleep(100l);
             }
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
         }
     }
 
-    private static void loadRDBfile(final Storage storage, final Configuration configuration) {
-        Argument<String> directory = configuration.directory().getPathArgument();
-        Argument<String> dbFilename = configuration.databaseFilename().getPathArgument();
+    private static void loadRDBfile(
+        final Storage storage,
+        final Configuration configuration
+    ) {
+        Argument<String> directory = configuration
+            .directory()
+            .getPathArgument();
+        Argument<String> dbFilename = configuration
+            .databaseFilename()
+            .getPathArgument();
         if (directory.isSet() && dbFilename.isSet()) {
             var path = Paths.get(directory.value(), dbFilename.value());
             if (Files.exists(path)) {
