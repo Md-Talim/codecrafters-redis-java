@@ -37,6 +37,7 @@ public class RPushCommand implements Command {
         if (existingEntry == null) {
             RArray newList = new RArray(newItems);
             storage.set(listKey, newList);
+            redis.notifyKey(listKey);
             return new CommandResponse(new RInteger(args.size() - 1));
         }
 

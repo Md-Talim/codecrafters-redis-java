@@ -1,6 +1,8 @@
 package redis.command.list;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import redis.Redis;
 import redis.client.Client;
 import redis.command.Command;
@@ -27,10 +29,24 @@ public class BLPopCommand implements Command {
         String key = args.get(0).toString();
         RValue value = storage.get(key);
 
+        Duration timeout = args.size() == 2
+            ? Duration.ofMillis(
+                (long) (Double.parseDouble(args.get(1).toString()) * 1000)
+            )
+            : Duration.ZERO;
+
         if (
             value == null || !(value instanceof RArray list) || list.isEmpty()
         ) {
-            value = redis.awaitKey(key);
+            if (timeout.isPositive()) {
+                value = redis.awaitKey(key, Optional.of(timeout));
+            } else {
+                value = redis.awaitKey(key, Optional.empty());
+            }
+
+            if (value == null) {
+                return new CommandResponse(new BulkString(null));
+            }
 
             if (!(value instanceof RArray)) {
                 return new CommandResponse(SimpleErrors.WRONG_TYPE_OPERATION);
