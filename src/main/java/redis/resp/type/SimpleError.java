@@ -1,6 +1,7 @@
 package redis.resp.type;
 
 public class SimpleError implements RValue {
+
     private final String message;
 
     public SimpleError(String message) {
@@ -12,4 +13,9 @@ public class SimpleError implements RValue {
         return (FirstByte.SimpleError + message + CRLF).getBytes();
     }
 
+    public static SimpleError wrongArguments(String command) {
+        return new SimpleError(
+            "wrong number of arguments for '%s' command".formatted(command)
+        );
+    }
 }
