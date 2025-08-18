@@ -101,6 +101,12 @@ public class Redis {
                 client.queueCommand(command, array);
                 return new CommandResponse(new SimpleString("QUEUED"));
             }
+
+            if (client.isInPubSubMode() && !command.isPubSub()) {
+                return new CommandResponse(
+                    SimpleErrors.invalidCommandInSubscribedContext(commandName)
+                );
+            }
         }
 
         if (command != null) {

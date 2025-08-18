@@ -19,4 +19,12 @@ public class SimpleErrors {
     public static SimpleError unknownCommand(String command) {
         return new SimpleError("ERR unknown comand '%s'".formatted(command));
     }
+
+    public static SimpleError invalidCommandInSubscribedContext(
+        String command
+    ) {
+        return new SimpleError(
+            "ERR Can't execute '%s' in subscribed mode".formatted(command)
+        );
+    }
 }

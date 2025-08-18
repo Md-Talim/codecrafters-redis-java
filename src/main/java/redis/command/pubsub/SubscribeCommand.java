@@ -47,4 +47,9 @@ public class SubscribeCommand implements Command {
     public String name() {
         return "SUBSCRIBE";
     }
+
+    @Override
+    public boolean isPubSub() {
+        return true;
+    }
 }

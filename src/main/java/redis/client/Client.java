@@ -204,7 +204,7 @@ public class Client implements Runnable {
         queuedCommands = null;
     }
 
-    public boolean isInPubSubMOde() {
+    public boolean isInPubSubMode() {
         return inPubSubMode;
     }
 

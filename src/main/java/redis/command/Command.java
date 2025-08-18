@@ -10,5 +10,9 @@ public interface Command {
         return true;
     }
 
+    default boolean isPubSub() {
+        return false;
+    }
+
     String name();
 }
