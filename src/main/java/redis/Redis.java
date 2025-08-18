@@ -124,6 +124,14 @@ public class Redis {
         try {
             lock.lock();
 
+            // Check if data is available before waiting
+            RValue value = storage.get(key);
+            if (
+                value != null && value instanceof RArray list && !list.isEmpty()
+            ) {
+                return value;
+            }
+
             if (timeout.isPresent()) {
                 long timeoutMs = timeout.get().toMillis();
                 boolean found = condition.await(
@@ -138,7 +146,7 @@ public class Redis {
                 condition.await();
             }
 
-            RValue value = storage.get(key);
+            value = storage.get(key);
             return value;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
