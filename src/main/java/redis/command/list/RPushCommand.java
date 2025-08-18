@@ -9,15 +9,13 @@ import redis.command.CommandResponse;
 import redis.resp.type.RArray;
 import redis.resp.type.RInteger;
 import redis.resp.type.RValue;
-import redis.resp.type.SimpleError;
+import redis.resp.type.SimpleErrors;
 import redis.store.Storage;
 
 public class RPushCommand implements Command {
 
     private final Redis redis;
     private final Storage storage;
-    private final String WRONG_OPERATION =
-        "WRONGTYPE Operation against a key holding the wrong kind of value";
 
     public RPushCommand(Redis redis) {
         this.redis = redis;
@@ -42,7 +40,7 @@ public class RPushCommand implements Command {
         }
 
         if (!(existingEntry instanceof RArray)) {
-            return new CommandResponse(new SimpleError(WRONG_OPERATION));
+            return new CommandResponse(SimpleErrors.WRONG_TYPE_OPERATION);
         }
 
         RArray existingList = (RArray) existingEntry;

@@ -10,6 +10,7 @@ import redis.resp.type.BulkString;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
 import redis.resp.type.SimpleError;
+import redis.resp.type.SimpleErrors;
 import redis.store.CacheEntry;
 import redis.store.Storage;
 import redis.stream.Stream;
@@ -28,11 +29,7 @@ public class XAddCommand implements Command {
     public CommandResponse execute(Client client, RArray command) {
         List<RValue> args = command.getArgs();
         if (args.size() < 3) {
-            return new CommandResponse(
-                new SimpleError(
-                    "ERR wrong number of arguments for 'xadd' command"
-                )
-            );
+            return new CommandResponse(SimpleErrors.wrongArguments("xadd"));
         }
 
         String key = args.get(0).toString();

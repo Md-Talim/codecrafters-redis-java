@@ -9,7 +9,7 @@ import redis.command.CommandResponse;
 import redis.resp.type.BulkString;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
-import redis.resp.type.SimpleError;
+import redis.resp.type.SimpleErrors;
 import redis.store.Storage;
 
 public class KeysCommand implements Command {
@@ -24,11 +24,7 @@ public class KeysCommand implements Command {
     public CommandResponse execute(Client client, RArray command) {
         List<RValue> args = command.getArgs();
         if (args.size() != 1) {
-            return new CommandResponse(
-                new SimpleError(
-                    "ERR wrong number of arguments for 'keys' command"
-                )
-            );
+            return new CommandResponse(SimpleErrors.wrongArguments("keys"));
         }
 
         List<String> keyList = storage.keys();

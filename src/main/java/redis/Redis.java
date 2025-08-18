@@ -19,6 +19,7 @@ import redis.configuration.Configuration;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
 import redis.resp.type.SimpleError;
+import redis.resp.type.SimpleErrors;
 import redis.resp.type.SimpleString;
 import redis.store.Storage;
 
@@ -90,6 +91,7 @@ public class Redis {
             return null;
         }
 
+        String commandName = array.getCommandName();
         Command command = commands.get(array.getCommandName());
 
         if (client != null) {
@@ -103,7 +105,7 @@ public class Redis {
             return command.execute(client, array);
         }
 
-        return null;
+        return new CommandResponse(SimpleErrors.unknownCommand(commandName));
     }
 
     public RValue awaitKey(String key, Optional<Duration> timeout) {

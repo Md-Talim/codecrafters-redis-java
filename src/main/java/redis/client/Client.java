@@ -48,13 +48,11 @@ public class Client implements Runnable {
         connected = true;
         System.out.println("%d: connected".formatted(id));
 
-        try (socket) {
-            final var inputStream = new TrackedInputStream(
-                socket.getInputStream()
-            );
-            final var outputStream = new TrackedOutputStream(
-                socket.getOutputStream()
-            );
+        try (
+            socket;
+            var inputStream = new TrackedInputStream(socket.getInputStream());
+            var outputStream = new TrackedOutputStream(socket.getOutputStream())
+        ) {
             final var deserializer = new Deserializer(inputStream);
 
             while (!replicate) {

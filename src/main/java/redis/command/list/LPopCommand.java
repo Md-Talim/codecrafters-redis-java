@@ -8,14 +8,12 @@ import redis.command.CommandResponse;
 import redis.resp.type.BulkString;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
-import redis.resp.type.SimpleError;
+import redis.resp.type.SimpleErrors;
 import redis.store.Storage;
 
 public class LPopCommand implements Command {
 
     private final Storage storage;
-    private final String WRONG_OPERATION =
-        "WRONGTYPE Operation against a key holding the wrong kind of value";
 
     public LPopCommand(Storage storage) {
         this.storage = storage;
@@ -25,7 +23,7 @@ public class LPopCommand implements Command {
     public CommandResponse execute(Client client, RArray command) {
         List<RValue> args = command.getArgs();
         if (args.size() > 2) {
-            return new CommandResponse(SimpleError.wrongArguments("lpop"));
+            return new CommandResponse(SimpleErrors.wrongArguments("lpop"));
         }
 
         String key = args.get(0).toString();
@@ -39,7 +37,7 @@ public class LPopCommand implements Command {
         }
 
         if (!(value instanceof RArray list)) {
-            return new CommandResponse(new SimpleError(WRONG_OPERATION));
+            return new CommandResponse(SimpleErrors.WRONG_TYPE_OPERATION);
         }
 
         if (count == 1) {

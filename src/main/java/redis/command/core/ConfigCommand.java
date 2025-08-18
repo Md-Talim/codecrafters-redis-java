@@ -11,7 +11,7 @@ import redis.configuration.Configuration;
 import redis.resp.type.BulkString;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
-import redis.resp.type.SimpleError;
+import redis.resp.type.SimpleErrors;
 
 public class ConfigCommand implements Command {
 
@@ -25,17 +25,12 @@ public class ConfigCommand implements Command {
     public CommandResponse execute(Client client, RArray command) {
         List<RValue> args = command.getArgs();
         if (args.size() != 2) {
-            return new CommandResponse(
-                new SimpleError(
-                    "ERR wrong number of arguments for 'config' command"
-                )
-            );
+            return new CommandResponse(SimpleErrors.wrongArguments("config"));
         }
+
         String action = args.get(0).toString();
         if (!"GET".equalsIgnoreCase(action)) {
-            return new CommandResponse(
-                new SimpleError("ERR unknown subcommand")
-            );
+            return new CommandResponse(SimpleErrors.UNKNOWN_SUBCOMMAND);
         }
 
         String key = args.get(1).toString();
