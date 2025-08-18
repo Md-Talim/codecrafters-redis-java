@@ -21,6 +21,7 @@ import redis.command.list.LPopCommand;
 import redis.command.list.LPushCommand;
 import redis.command.list.LRangeCommand;
 import redis.command.list.RPushCommand;
+import redis.command.pubsub.PublishCommand;
 import redis.command.pubsub.SubscribeCommand;
 import redis.command.replication.PsyncCommand;
 import redis.command.replication.ReplConfCommand;
@@ -62,7 +63,8 @@ public class CommandRegistry {
             new LLenCommand(storage),
             new LPopCommand(storage),
             new BLPopCommand(redis),
-            new SubscribeCommand(redis)
+            new SubscribeCommand(redis),
+            new PublishCommand(redis)
         );
 
         return commandList

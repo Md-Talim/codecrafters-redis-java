@@ -31,4 +31,9 @@ public class PubSubManager {
         client.incrementSubscriptionCount();
         client.enterSubscribedMode();
     }
+
+    public synchronized int publish(String channel, String message) {
+        var clients = channelSubscriptions.get(channel);
+        return clients.size();
+    }
 }
