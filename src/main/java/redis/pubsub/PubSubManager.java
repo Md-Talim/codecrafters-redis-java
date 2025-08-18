@@ -29,6 +29,6 @@ public class PubSubManager {
             .add(channel);
 
         client.incrementSubscriptionCount();
-        client.enterPubSubMode();
+        client.enterSubscribedMode();
     }
 }

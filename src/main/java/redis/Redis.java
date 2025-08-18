@@ -102,7 +102,7 @@ public class Redis {
                 return new CommandResponse(new SimpleString("QUEUED"));
             }
 
-            if (client.isInPubSubMode() && !command.isPubSub()) {
+            if (client.isInSubscribedMode() && !command.isPubSub()) {
                 return new CommandResponse(
                     SimpleErrors.invalidCommandInSubscribedContext(commandName)
                 );
