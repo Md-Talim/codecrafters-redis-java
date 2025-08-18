@@ -62,7 +62,7 @@ public class CommandRegistry {
             new LLenCommand(storage),
             new LPopCommand(storage),
             new BLPopCommand(redis),
-            new SubscribeCommand()
+            new SubscribeCommand(redis)
         );
 
         return commandList

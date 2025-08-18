@@ -16,6 +16,7 @@ import redis.command.Command;
 import redis.command.CommandRegistry;
 import redis.command.CommandResponse;
 import redis.configuration.Configuration;
+import redis.pubsub.PubSubManager;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
 import redis.resp.type.SimpleError;
@@ -34,6 +35,7 @@ public class Redis {
     private AtomicLong replicationOffset = new AtomicLong();
     private final ReentrantLock lock = new ReentrantLock(true);
     private final Map<String, Condition> conditions = new ConcurrentHashMap<>();
+    private final PubSubManager pubSubManager = new PubSubManager();
 
     public Redis(Storage storage, Configuration configuration) {
         this.storage = storage;
@@ -153,5 +155,9 @@ public class Redis {
         } finally {
             lock.unlock();
         }
+    }
+
+    public PubSubManager pubSub() {
+        return pubSubManager;
     }
 }

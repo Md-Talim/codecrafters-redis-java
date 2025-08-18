@@ -37,6 +37,9 @@ public class Client implements Runnable {
         new ArrayBlockingQueue<>(128, true);
     private List<QueuedCommand> queuedCommands;
 
+    private boolean inPubSubMode = false;
+    private int subscriptionCount = 0;
+
     public Client(Socket socket, Redis evaluator) throws IOException {
         this.id = ID_INTEGER.incrementAndGet();
         this.socket = socket;
@@ -199,5 +202,21 @@ public class Client implements Runnable {
 
     public void endTransaction() {
         queuedCommands = null;
+    }
+
+    public boolean isInPubSubMOde() {
+        return inPubSubMode;
+    }
+
+    public void enterPubSubMode() {
+        inPubSubMode = true;
+    }
+
+    public int getSubscriptionCount() {
+        return subscriptionCount;
+    }
+
+    public void incrementSubscriptionCount() {
+        subscriptionCount++;
     }
 }
