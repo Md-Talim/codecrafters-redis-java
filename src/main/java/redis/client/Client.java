@@ -28,6 +28,9 @@ public class Client implements Runnable {
     private final Socket socket;
     private final Redis evaluator;
 
+    private final TrackedInputStream inputStream;
+    private final TrackedOutputStream outputStream;
+
     private boolean connected;
     private Consumer<Client> disconnectedListener;
     private boolean replicate;
@@ -44,6 +47,8 @@ public class Client implements Runnable {
         this.id = ID_INTEGER.incrementAndGet();
         this.socket = socket;
         this.evaluator = evaluator;
+        this.inputStream = new TrackedInputStream(socket.getInputStream());
+        this.outputStream = new TrackedOutputStream(socket.getOutputStream());
     }
 
     @Override
@@ -51,11 +56,7 @@ public class Client implements Runnable {
         connected = true;
         System.out.println("%d: connected".formatted(id));
 
-        try (
-            socket;
-            var inputStream = new TrackedInputStream(socket.getInputStream());
-            var outputStream = new TrackedOutputStream(socket.getOutputStream())
-        ) {
+        try (socket) {
             final var deserializer = new Deserializer(inputStream);
 
             while (!replicate) {
@@ -218,5 +219,13 @@ public class Client implements Runnable {
 
     public void incrementSubscriptionCount() {
         subscriptionCount++;
+    }
+
+    public void notifySubscription(RArray message) {
+        try {
+            outputStream.write(message.serialize());
+        } catch (IOException e) {
+            System.out.println("IOException " + e.getMessage());
+        }
     }
 }

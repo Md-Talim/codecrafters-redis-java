@@ -1,10 +1,13 @@
 package redis.pubsub;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import redis.client.Client;
+import redis.resp.type.BulkString;
+import redis.resp.type.RArray;
 
 public class PubSubManager {
 
@@ -34,6 +37,22 @@ public class PubSubManager {
 
     public synchronized int publish(String channel, String message) {
         var clients = channelSubscriptions.get(channel);
+        if (clients == null) {
+            return 0;
+        }
+
+        RArray messageResponse = new RArray(
+            List.of(
+                new BulkString("message"),
+                new BulkString(channel),
+                new BulkString(message)
+            )
+        );
+
+        for (Client client : clients) {
+            client.notifySubscription(messageResponse);
+        }
+
         return clients.size();
     }
 }
