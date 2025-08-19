@@ -221,6 +221,17 @@ public class Client implements Runnable {
         subscriptionCount++;
     }
 
+    public void decrementSubscriptionCount() {
+        subscriptionCount--;
+        if (subscriptionCount == 0) {
+            exitSubscriptionMode();
+        }
+    }
+
+    public void exitSubscriptionMode() {
+        inPubSubMode = false;
+    }
+
     public void notifySubscription(RArray message) {
         try {
             outputStream.write(message.serialize());

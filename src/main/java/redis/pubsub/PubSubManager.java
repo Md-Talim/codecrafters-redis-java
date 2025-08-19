@@ -55,4 +55,42 @@ public class PubSubManager {
 
         return clients.size();
     }
+
+    public synchronized void unsubscribeAll(Client client) {
+        Set<String> channels = clientChannels.get(client);
+        if (channels != null) {
+            Set<String> channelsCopy = Set.copyOf(channels);
+            for (String channel : channelsCopy) {
+                unsubscribe(client, channel);
+            }
+        }
+    }
+
+    public synchronized void unsubscribe(Client client, String channel) {
+        // Remove channel from client subscriptions
+        Set<String> clientSubs = clientChannels.get(client);
+        if (clientSubs == null || !clientSubs.remove(channel)) {
+            return;
+        }
+
+        if (clientSubs.isEmpty()) {
+            clientChannels.remove(client);
+        }
+
+        // Remove client from channel subscriptions
+        Set<Client> subscribers = channelSubscriptions.get(channel);
+        if (subscribers != null) {
+            subscribers.remove(client);
+            if (subscribers.isEmpty()) {
+                channelSubscriptions.remove(channel);
+            }
+        }
+
+        client.decrementSubscriptionCount();
+    }
+
+    public Set<String> getClientChannels(Client client) {
+        Set<String> channels = clientChannels.get(client);
+        return channels != null ? Set.copyOf(channels) : Set.of();
+    }
 }
