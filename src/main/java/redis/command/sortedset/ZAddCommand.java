@@ -27,7 +27,9 @@ public class ZAddCommand implements Command {
         double score = Double.parseDouble(args.get(1).toString());
         String member = args.get(2).toString();
 
-        return new CommandResponse(new RInteger(1));
+        var response = storage.addToSet(key, member, score);
+
+        return new CommandResponse(new RInteger(response ? 1 : 0));
     }
 
     @Override

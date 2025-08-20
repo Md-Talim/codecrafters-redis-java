@@ -12,6 +12,7 @@ public class Storage {
 
     private final Map<String, CacheEntry<RValue>> map =
         new ConcurrentHashMap<>();
+    private final Map<String, SortedSet> sortedSets = new ConcurrentHashMap<>();
 
     public void clear() {
         map.clear();
@@ -69,5 +70,10 @@ public class Storage {
             appender.accept((T) expiry.value());
             return expiry;
         });
+    }
+
+    public boolean addToSet(String key, String member, double score) {
+        var sortedSet = sortedSets.computeIfAbsent(key, _ -> new SortedSet());
+        return sortedSet.add(member, score);
     }
 }
