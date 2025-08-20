@@ -76,4 +76,9 @@ public class Storage {
         var sortedSet = sortedSets.computeIfAbsent(key, _ -> new SortedSet());
         return sortedSet.add(member, score);
     }
+
+    public int getRank(String key, String member) {
+        var sortedSet = sortedSets.get(key);
+        return sortedSet == null ? -1 : sortedSet.rank(member);
+    }
 }

@@ -35,6 +35,31 @@ public class SortedSet {
             .computeIfAbsent(score, _ -> new LinkedHashSet<>())
             .add(member);
 
+        System.out.println(memberScores);
+        System.out.println(scoreToMembers);
+
         return oldScore == null; // true if new member added
+    }
+
+    public int rank(String member) {
+        Double targetScore = memberScores.get(member);
+        if (targetScore == null) {
+            return -1;
+        }
+
+        int rank = 0;
+        for (var score : scoreToMembers.keySet()) {
+            var scoreMembers = scoreToMembers.get(score);
+            if (score.equals(targetScore)) {
+                for (String scoreMember : scoreMembers) {
+                    if (scoreMember.equals(member)) return rank;
+                    rank++;
+                }
+            } else {
+                rank += scoreMembers.size();
+            }
+        }
+
+        return -1;
     }
 }

@@ -28,6 +28,7 @@ import redis.command.replication.PsyncCommand;
 import redis.command.replication.ReplConfCommand;
 import redis.command.replication.WaitCommand;
 import redis.command.sortedset.ZAddCommand;
+import redis.command.sortedset.ZRankCommand;
 import redis.command.stream.XAddCommand;
 import redis.command.stream.XRangeCommand;
 import redis.command.stream.XReadCommand;
@@ -68,7 +69,8 @@ public class CommandRegistry {
             new SubscribeCommand(redis),
             new PublishCommand(redis),
             new UnsubscribeCommand(redis),
-            new ZAddCommand(storage)
+            new ZAddCommand(storage),
+            new ZRankCommand(storage)
         );
 
         return commandList
