@@ -81,4 +81,8 @@ public class Storage {
         var sortedSet = sortedSets.get(key);
         return sortedSet == null ? -1 : sortedSet.rank(member);
     }
+
+    public SortedSet getSortedSet(String key) {
+        return sortedSets.get(key);
+    }
 }

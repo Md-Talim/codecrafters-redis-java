@@ -1,10 +1,14 @@
 package redis.store;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
+import redis.resp.type.BulkString;
+import redis.resp.type.RValue;
 
 public class SortedSet {
 
@@ -31,9 +35,7 @@ public class SortedSet {
         }
 
         memberScores.put(member, score);
-        scoreToMembers
-            .computeIfAbsent(score, _ -> new LinkedHashSet<>())
-            .add(member);
+        scoreToMembers.computeIfAbsent(score, _ -> new TreeSet<>()).add(member);
 
         System.out.println(memberScores);
         System.out.println(scoreToMembers);
@@ -61,5 +63,48 @@ public class SortedSet {
         }
 
         return -1;
+    }
+
+    public List<RValue> getMembers() {
+        List<RValue> members = new ArrayList<>();
+
+        for (var score : scoreToMembers.keySet()) {
+            var scoreMembers = scoreToMembers.get(score);
+
+            for (String scoreMember : scoreMembers) {
+                members.add(new BulkString(scoreMember));
+            }
+        }
+
+        return members;
+    }
+
+    public List<RValue> getRange(int start, int stop) {
+        List<RValue> result = new ArrayList<>();
+
+        int currentIndex = 0;
+        int targetSize = stop - start;
+
+        for (var score : scoreToMembers.keySet()) {
+            var scoreMembers = scoreToMembers.get(score);
+
+            for (String member : scoreMembers) {
+                if (currentIndex >= start && result.size() < targetSize) {
+                    result.add(new BulkString(member));
+                }
+
+                currentIndex++;
+
+                if (result.size() >= targetSize) {
+                    return result;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public int size() {
+        return memberScores.size();
     }
 }
