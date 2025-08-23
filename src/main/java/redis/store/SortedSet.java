@@ -107,4 +107,8 @@ public class SortedSet {
     public int size() {
         return memberScores.size();
     }
+
+    public Double getScore(String member) {
+        return memberScores.get(member);
+    }
 }
