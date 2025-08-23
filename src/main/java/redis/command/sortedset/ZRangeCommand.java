@@ -20,7 +20,7 @@ public class ZRangeCommand implements Command {
     public CommandResponse execute(Client client, RArray command) {
         var args = command.getArgs();
         if (args.isEmpty() || args.size() > 3) {
-            return new CommandResponse(SimpleErrors.wrongArguments("zrank"));
+            return new CommandResponse(SimpleErrors.wrongArguments("zrange"));
         }
 
         String key = args.get(0).toString();
