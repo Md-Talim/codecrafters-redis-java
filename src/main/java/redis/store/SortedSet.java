@@ -43,6 +43,23 @@ public class SortedSet {
         return oldScore == null; // true if new member added
     }
 
+    public boolean remove(String member) {
+        Double memberScore = memberScores.get(member);
+        if (memberScore == null) {
+            return false;
+        }
+
+        memberScores.remove(member);
+
+        Set<String> scoreMembers = scoreToMembers.get(memberScore);
+        scoreMembers.remove(member);
+        if (scoreMembers.isEmpty()) {
+            scoreToMembers.remove(memberScore);
+        }
+
+        return true;
+    }
+
     public int rank(String member) {
         Double targetScore = memberScores.get(member);
         if (targetScore == null) {

@@ -31,6 +31,7 @@ import redis.command.sortedset.ZAddCommand;
 import redis.command.sortedset.ZCardCommand;
 import redis.command.sortedset.ZRangeCommand;
 import redis.command.sortedset.ZRankCommand;
+import redis.command.sortedset.ZRemCommand;
 import redis.command.sortedset.ZScoreCommand;
 import redis.command.stream.XAddCommand;
 import redis.command.stream.XRangeCommand;
@@ -76,7 +77,8 @@ public class CommandRegistry {
             new ZRankCommand(storage),
             new ZRangeCommand(storage),
             new ZCardCommand(storage),
-            new ZScoreCommand(storage)
+            new ZScoreCommand(storage),
+            new ZRemCommand(storage)
         );
 
         return commandList
