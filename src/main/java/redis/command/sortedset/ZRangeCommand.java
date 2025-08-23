@@ -32,14 +32,24 @@ public class ZRangeCommand implements Command {
             return new CommandResponse(new RArray(new ArrayList<>()));
         }
 
+        int size = sortedSet.size();
+
+        if (start < 0) {
+            start = (size + start) < 0 ? 0 : (size + start);
+        }
+        if (stop < 0) {
+            stop = size + stop;
+        }
+
         int normalizedStart = Math.max(0, start);
-        int normalizedStop = Math.min(sortedSet.size() - 1, stop);
+        int normalizedStop = Math.min(size - 1, stop);
 
         if (normalizedStart > normalizedStop) {
             return new CommandResponse(new RArray(new ArrayList<>()));
         }
 
         var members = sortedSet.getRange(normalizedStart, normalizedStop + 1);
+
         return new CommandResponse(new RArray(members));
     }
 
