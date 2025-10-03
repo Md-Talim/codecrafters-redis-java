@@ -8,6 +8,7 @@ import redis.client.Client;
 import redis.command.Command;
 import redis.command.CommandResponse;
 import redis.resp.type.BulkString;
+import redis.resp.type.NullArray;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
 import redis.resp.type.SimpleErrors;
@@ -45,7 +46,7 @@ public class BLPopCommand implements Command {
             }
 
             if (value == null) {
-                return new CommandResponse(new BulkString(null));
+                return new CommandResponse(NullArray.INSTANCE);
             }
 
             if (!(value instanceof RArray)) {

@@ -8,6 +8,7 @@ import redis.client.Client;
 import redis.command.Command;
 import redis.command.CommandResponse;
 import redis.resp.type.BulkString;
+import redis.resp.type.NullArray;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
 import redis.store.Storage;
@@ -72,7 +73,7 @@ public class XReadCommand implements Command {
             );
 
             if (entries == null) {
-                return new CommandResponse(new BulkString(null));
+                return new CommandResponse(NullArray.INSTANCE);
             }
 
             List<RValue> entryResponse = new ArrayList<>();
