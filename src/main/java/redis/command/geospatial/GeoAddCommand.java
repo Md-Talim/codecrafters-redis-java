@@ -1,11 +1,9 @@
 package redis.command.geospatial;
 
-import java.util.Arrays;
 import redis.client.Client;
 import redis.command.Command;
 import redis.command.CommandResponse;
-import redis.command.sortedset.ZAddCommand;
-import redis.resp.type.BulkString;
+import redis.resp.type.GeoCoordinate;
 import redis.resp.type.RArray;
 import redis.resp.type.RInteger;
 import redis.resp.type.SimpleError;
@@ -15,10 +13,6 @@ import redis.store.Storage;
 public class GeoAddCommand implements Command {
 
     private final Storage storage;
-    private final double MIN_LONGITUDE = -180.0;
-    private final double MAX_LONGITUDE = 180.0;
-    private final double MIN_LATITUDE = -85.05112878;
-    private final double MAX_LATITUDE = 85.05112878;
 
     public GeoAddCommand(Storage storage) {
         this.storage = storage;
@@ -36,20 +30,14 @@ public class GeoAddCommand implements Command {
         double latitude = Double.parseDouble(args.get(2).toString());
         String member = args.get(3).toString();
 
-        if (!isValidCoordinates(longitude, latitude)) {
+        var coordinate = new GeoCoordinate(longitude, latitude);
+        if (!coordinate.isValid()) {
             return new CommandResponse(invalidCoordinates(longitude, latitude));
         }
 
-        var zaddCommand = new ZAddCommand(storage);
-        var zaddArgs = new RArray(
-            Arrays.asList(
-                new BulkString("ZADD"),
-                new BulkString(key),
-                new RInteger(0),
-                new BulkString(member)
-            )
-        );
-        zaddCommand.execute(client, zaddArgs);
+        long score = coordinate.encode();
+
+        storage.addToSet(key, member, (long) score);
 
         return new CommandResponse(new RInteger(1));
     }
@@ -57,15 +45,6 @@ public class GeoAddCommand implements Command {
     @Override
     public String name() {
         return "GEOADD";
-    }
-
-    private boolean isValidCoordinates(double longitude, double latitude) {
-        return (
-            longitude >= MIN_LONGITUDE &&
-            longitude <= MAX_LONGITUDE &&
-            latitude >= MIN_LATITUDE &&
-            latitude <= MAX_LATITUDE
-        );
     }
 
     private SimpleError invalidCoordinates(double longitude, double latitude) {
