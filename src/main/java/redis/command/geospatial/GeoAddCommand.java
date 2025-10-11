@@ -1,8 +1,11 @@
 package redis.command.geospatial;
 
+import java.util.Arrays;
 import redis.client.Client;
 import redis.command.Command;
 import redis.command.CommandResponse;
+import redis.command.sortedset.ZAddCommand;
+import redis.resp.type.BulkString;
 import redis.resp.type.RArray;
 import redis.resp.type.RInteger;
 import redis.resp.type.SimpleError;
@@ -36,6 +39,17 @@ public class GeoAddCommand implements Command {
         if (!isValidCoordinates(longitude, latitude)) {
             return new CommandResponse(invalidCoordinates(longitude, latitude));
         }
+
+        var zaddCommand = new ZAddCommand(storage);
+        var zaddArgs = new RArray(
+            Arrays.asList(
+                new BulkString("ZADD"),
+                new BulkString(key),
+                new RInteger(0),
+                new BulkString(member)
+            )
+        );
+        zaddCommand.execute(client, zaddArgs);
 
         return new CommandResponse(new RInteger(1));
     }
