@@ -16,6 +16,7 @@ import redis.command.core.PingCommand;
 import redis.command.core.SetCommand;
 import redis.command.core.TypeCommand;
 import redis.command.geospatial.GeoAddCommand;
+import redis.command.geospatial.GeoPosCommand;
 import redis.command.list.BLPopCommand;
 import redis.command.list.LLenCommand;
 import redis.command.list.LPopCommand;
@@ -80,7 +81,8 @@ public class CommandRegistry {
             new ZCardCommand(storage),
             new ZScoreCommand(storage),
             new ZRemCommand(storage),
-            new GeoAddCommand(storage)
+            new GeoAddCommand(storage),
+            new GeoPosCommand(storage)
         );
 
         return commandList
