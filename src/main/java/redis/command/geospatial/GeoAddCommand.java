@@ -33,8 +33,8 @@ public class GeoAddCommand implements Command {
         double latitude = Double.parseDouble(args.get(2).toString());
         String member = args.get(3).toString();
 
-        if (!isValidCoordinates(latitude, longitude)) {
-            return new CommandResponse(invalidCoordinates(latitude, longitude));
+        if (!isValidCoordinates(longitude, latitude)) {
+            return new CommandResponse(invalidCoordinates(longitude, latitude));
         }
 
         return new CommandResponse(new RInteger(1));
