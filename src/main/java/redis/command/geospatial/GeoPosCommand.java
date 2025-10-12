@@ -8,6 +8,7 @@ import redis.client.Client;
 import redis.command.Command;
 import redis.command.CommandResponse;
 import redis.resp.type.BulkString;
+import redis.resp.type.GeoCoordinate;
 import redis.resp.type.NullArray;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
@@ -26,7 +27,7 @@ public class GeoPosCommand implements Command {
     public CommandResponse execute(Client client, RArray command) {
         var args = command.getArgs();
         if (args.size() < 2) {
-            return new CommandResponse(SimpleErrors.wrongArguments("geoadd"));
+            return new CommandResponse(SimpleErrors.wrongArguments("geopos"));
         }
 
         String key = args.get(0).toString();
@@ -48,10 +49,11 @@ public class GeoPosCommand implements Command {
                 continue;
             }
 
-            // Hardcoded longitude, and latitude
+            var coordinates = GeoCoordinate.decode(score.longValue());
+
             List<RValue> response = Arrays.asList(
-                new BulkString("0"),
-                new BulkString("0")
+                new BulkString("%f".formatted(coordinates.longitude())),
+                new BulkString("%f".formatted(coordinates.latitude()))
             );
             responses.add(new RArray(response));
         }
