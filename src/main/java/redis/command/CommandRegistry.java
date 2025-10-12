@@ -18,6 +18,7 @@ import redis.command.core.TypeCommand;
 import redis.command.geospatial.GeoAddCommand;
 import redis.command.geospatial.GeoDistCommand;
 import redis.command.geospatial.GeoPosCommand;
+import redis.command.geospatial.GeoSearchCommand;
 import redis.command.list.BLPopCommand;
 import redis.command.list.LLenCommand;
 import redis.command.list.LPopCommand;
@@ -84,7 +85,8 @@ public class CommandRegistry {
             new ZRemCommand(storage),
             new GeoAddCommand(storage),
             new GeoPosCommand(storage),
-            new GeoDistCommand(storage)
+            new GeoDistCommand(storage),
+            new GeoSearchCommand(storage)
         );
 
         return commandList
