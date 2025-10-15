@@ -99,4 +99,31 @@ public class GeoCoordinate {
     }
 
     public record Coordinate(double latitude, double longitude) {}
+
+    /**
+     * Calculate the distance between two coordinates using the Haversine formula.
+     * @param coordinate1 First coordinate
+     * @param coordinate2 Second coordinate
+     * @return Distance in meters
+     * @see <a href="https://rosettacode.org/wiki/Haversine_formula#Java">Haversine formula</a>
+     */
+    public static double calculateDistance(
+        Coordinate coordinate1,
+        Coordinate coordinate2
+    ) {
+        final double R = 6372797.560856; // Earth radius in meters
+        double lat1 = Math.toRadians(coordinate1.latitude());
+        double lat2 = Math.toRadians(coordinate2.latitude());
+        double dLat = lat2 - lat1;
+        double dLon = Math.toRadians(
+            coordinate2.longitude() - coordinate1.longitude()
+        );
+
+        double a =
+            Math.pow(Math.sin(dLat / 2), 2) +
+            Math.pow(Math.sin(dLon / 2), 2) * Math.cos(lat1) * Math.cos(lat2);
+
+        double c = 2 * Math.asin(Math.sqrt(a));
+        return R * c;
+    }
 }

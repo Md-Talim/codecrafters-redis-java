@@ -56,7 +56,10 @@ public class GeoSearchCommand implements Command {
         for (var member : members) {
             var score = set.getScore(member.toString());
             var locationCoordinate = GeoCoordinate.decode(score.longValue());
-            var distance = calculateDistance(centerPoint, locationCoordinate);
+            var distance = GeoCoordinate.calculateDistance(
+                centerPoint,
+                locationCoordinate
+            );
 
             if (distance <= radius) {
                 locationResponseList.add(new BulkString(member.toString()));
@@ -79,27 +82,6 @@ public class GeoSearchCommand implements Command {
             default:
                 throw new IllegalArgumentException("Unsupported unit: " + unit);
         }
-    }
-
-    // https://rosettacode.org/wiki/Haversine_formula#Java
-    private double calculateDistance(
-        GeoCoordinate.Coordinate coordinate1,
-        GeoCoordinate.Coordinate coordinate2
-    ) {
-        final double R = 6372797.560856; // In meters
-        double lat1 = Math.toRadians(coordinate1.latitude());
-        double lat2 = Math.toRadians(coordinate2.latitude());
-        double dLat = lat2 - lat1;
-        double dLon = Math.toRadians(
-            coordinate2.longitude() - coordinate1.longitude()
-        );
-
-        double a =
-            Math.pow(Math.sin(dLat / 2), 2) +
-            Math.pow(Math.sin(dLon / 2), 2) * Math.cos(lat1) * Math.cos(lat2);
-
-        double c = 2 * Math.asin(Math.sqrt(a));
-        return R * c;
     }
 
     @Override

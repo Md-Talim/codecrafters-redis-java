@@ -41,30 +41,12 @@ public class GeoDistCommand implements Command {
 
         var coordinate1 = GeoCoordinate.decode(score1.longValue());
         var coordinate2 = GeoCoordinate.decode(score2.longValue());
-        var distance = calculateDistance(coordinate1, coordinate2);
-
-        return new CommandResponse(new BulkString("%f".formatted(distance)));
-    }
-
-    // https://rosettacode.org/wiki/Haversine_formula#Java
-    private double calculateDistance(
-        GeoCoordinate.Coordinate coordinate1,
-        GeoCoordinate.Coordinate coordinate2
-    ) {
-        final double R = 6372797.560856; // In kilometers
-        double lat1 = Math.toRadians(coordinate1.latitude());
-        double lat2 = Math.toRadians(coordinate2.latitude());
-        double dLat = lat2 - lat1;
-        double dLon = Math.toRadians(
-            coordinate2.longitude() - coordinate1.longitude()
+        var distance = GeoCoordinate.calculateDistance(
+            coordinate1,
+            coordinate2
         );
 
-        double a =
-            Math.pow(Math.sin(dLat / 2), 2) +
-            Math.pow(Math.sin(dLon / 2), 2) * Math.cos(lat1) * Math.cos(lat2);
-
-        double c = 2 * Math.asin(Math.sqrt(a));
-        return R * c;
+        return new CommandResponse(new BulkString("%f".formatted(distance)));
     }
 
     @Override
