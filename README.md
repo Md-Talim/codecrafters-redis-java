@@ -4,20 +4,21 @@
 
 This project is a Java implementation of a Redis server, built as part of the [Codecrafters "Build Your Own Redis" challenge](https://codecrafters.io/challenges/redis). It demonstrates key concepts in building distributed systems, network protocols, and in-memory databases.
 
-## 📌 What This Project Does
+## What This Project Does
 
 This Redis implementation covers the fundamental components of a modern in-memory data store:
 
 - **RESP Protocol:** Complete implementation of the Redis Serialization Protocol for client-server communication.
 - **Multi-threaded Server:** Uses Java's virtual threads to handle concurrent client connections efficiently.
-- **Data Structures:** Support for strings, lists, sorted sets, and streams with Redis-compatible operations.
+- **Data Structures:** Support for strings, lists, sorted sets, streams, and geospatial data with Redis-compatible operations.
 - **Persistence:** RDB file loading and parsing for data durability.
 - **Replication:** Master-slave replication with automatic synchronization.
 - **Pub/Sub Messaging:** Publisher-subscriber pattern for real-time messaging.
 - **Transactions:** ACID-compliant transaction support with MULTI/EXEC/DISCARD.
 - **Expiration:** Time-based key expiration with automatic cleanup.
+- **Geospatial Operations:** Location-based queries and distance calculations using geographical coordinates.
 
-## ✨ Key Features
+## Key Features
 
 ### Core Data Operations
 
@@ -49,6 +50,13 @@ This Redis implementation covers the fundamental components of a modern in-memor
 - **Range Queries:** `XRANGE` for retrieving entries by ID range
 - **Blocking Reads:** `XREAD` with optional blocking for real-time consumption
 
+#### Geospatial Data
+
+- **Location Storage:** `GEOADD` for storing geographical coordinates with location names
+- **Position Retrieval:** `GEOPOS` for retrieving coordinates of stored locations
+- **Distance Calculation:** `GEODIST` for calculating distances between two locations
+- **Proximity Search:** `GEOSEARCH` for finding locations within a specified radius
+
 ### Messaging & Communication
 
 - **Pub/Sub:** `SUBSCRIBE`, `UNSUBSCRIBE`, `PUBLISH` for message broadcasting
@@ -62,7 +70,7 @@ This Redis implementation covers the fundamental components of a modern in-memor
 - **Blocking Operations:** Non-blocking server design with blocking client operations
 - **Error Handling:** Comprehensive error reporting following Redis conventions
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ### Network Layer
 
@@ -79,6 +87,7 @@ The storage layer provides a thread-safe, concurrent map with support for:
 - Key-value storage with expiration
 - Type-specific operations (lists, sorted sets, streams)
 - Atomic operations and transactions
+- Geospatial data encoding and querying
 
 ### RESP Protocol
 
@@ -88,7 +97,7 @@ Complete implementation of the Redis Serialization Protocol (RESP) for:
 - Serializing server responses
 - Handling different data types (strings, arrays, integers, errors)
 
-## 🔍 How It Works Internally
+## How It Works Internally
 
 The Redis server processes client requests through several stages:
 
@@ -99,20 +108,19 @@ The Redis server processes client requests through several stages:
 3. **Command Routing:** The `Redis` class routes parsed commands to the appropriate `Command` implementation based on the command name.
 
 4. **Command Execution:** Each command class implements the `Command` interface with an `execute` method that:
-
-   - Validates arguments
-   - Performs the requested operation
-   - Returns a properly formatted response
+    - Validates arguments
+    - Performs the requested operation
+    - Returns a properly formatted response
 
 5. **Response Serialization:** Results are serialized back to RESP format and sent to the client.
 
 6. **State Management:** The server maintains:
-   - **Storage:** Thread-safe key-value store with expiration
-   - **Replication:** List of connected replica servers
-   - **Pub/Sub:** Channel subscriptions and message routing
-   - **Transactions:** Queued commands for atomic execution
+    - **Storage:** Thread-safe key-value store with expiration
+    - **Replication:** List of connected replica servers
+    - **Pub/Sub:** Channel subscriptions and message routing
+    - **Transactions:** Queued commands for atomic execution
 
-## ⚙️ How to Set Up and Run
+## How to Set Up and Run
 
 ### Prerequisites
 
@@ -123,15 +131,15 @@ The Redis server processes client requests through several stages:
 
 1. Clone the repository:
 
-   ```sh
-   git clone https://github.com/Md-Talim/codecrafters-redis-java.git
-   cd codecrafters-redis-java
-   ```
+    ```sh
+    git clone https://github.com/Md-Talim/codecrafters-redis-java.git
+    cd codecrafters-redis-java
+    ```
 
 2. Build the project:
-   ```sh
-   mvn compile
-   ```
+    ```sh
+    mvn compile
+    ```
 
 ### Running the Server
 
@@ -204,6 +212,21 @@ OK
       3) "field2"
       4) "value2"
 
+# Geospatial operations
+127.0.0.1:6379> GEOADD locations -122.4194 37.7749 "San Francisco"
+(integer) 1
+127.0.0.1:6379> GEOADD locations -74.0060 40.7128 "New York"
+(integer) 1
+127.0.0.1:6379> GEODIST locations "San Francisco" "New York"
+"4129554.895234"
+127.0.0.1:6379> GEOPOS locations "San Francisco" "New York"
+1) 1) "-122.419403"
+   2) "37.774900"
+2) 1) "-74.006000"
+   2) "40.712800"
+127.0.0.1:6379> GEOSEARCH locations FROMLONLAT -122.4 37.8 BYRADIUS 50 km
+1) "San Francisco"
+
 # Pub/Sub messaging
 127.0.0.1:6379> SUBSCRIBE news
 Reading messages... (press Ctrl-C to quit)
@@ -224,7 +247,7 @@ QUEUED
 2) OK
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 redis-java/
@@ -241,6 +264,7 @@ redis-java/
 │   │   ├── list/                    # List operations (LPUSH, RPUSH, etc.)
 │   │   ├── sortedset/              # Sorted set operations (ZADD, ZRANGE, etc.)
 │   │   ├── stream/                 # Stream operations (XADD, XREAD, etc.)
+│   │   ├── geospatial/             # Geospatial commands (GEOADD, GEODIST, etc.)
 │   │   ├── pubsub/                 # Pub/Sub commands
 │   │   ├── replication/            # Replication commands
 │   │   └── transaction/            # Transaction commands
@@ -255,7 +279,7 @@ redis-java/
 └── README.md                       # This file
 ```
 
-## 🎯 Implemented Redis Commands
+## Implemented Redis Commands
 
 ### String Commands
 
@@ -287,6 +311,13 @@ redis-java/
 - `XRANGE key start end` - Get entries by ID range
 - `XREAD [BLOCK milliseconds] STREAMS key... id...` - Read from streams
 
+### Geospatial Commands
+
+- `GEOADD key longitude latitude member` - Add geographic location to sorted set
+- `GEOPOS key member [member...]` - Get longitude and latitude of members
+- `GEODIST key member1 member2` - Calculate distance between two members in meters
+- `GEOSEARCH key FROMLONLAT longitude latitude BYRADIUS radius unit` - Search for members within radius
+
 ### Pub/Sub Commands
 
 - `SUBSCRIBE channel...` - Subscribe to channels
@@ -314,7 +345,7 @@ redis-java/
 - `REPLCONF option value` - Configure replication
 - `WAIT numreplicas timeout` - Wait for replica acknowledgments
 
-## 💡 Technical Challenges & Solutions
+## Technical Challenges & Solutions
 
 ### Concurrency & Thread Safety
 
@@ -346,14 +377,15 @@ redis-java/
 - **Challenge:** Implement Redis streams with unique ID generation and range queries.
 - **Solution:** Created custom `Stream` class with proper ID comparison and concurrent read/write operations.
 
-## 🚀 Performance Characteristics
+## Performance Characteristics
 
 - **Throughput:** Capable of handling thousands of concurrent connections using virtual threads
 - **Memory:** Efficient memory usage with lazy expiration and concurrent data structures
 - **Latency:** Low-latency responses through optimized command routing and minimal allocations
 - **Scalability:** Master-slave replication support for horizontal scaling
+- **Geospatial Performance:** Efficient geospatial queries using geohash encoding and optimized distance calculations
 
-## 🧪 Testing
+## Testing
 
 The implementation has been tested against the CodeCrafters test suite, which validates:
 
@@ -363,15 +395,19 @@ The implementation has been tested against the CodeCrafters test suite, which va
 - Replication functionality
 - Transaction atomicity
 - Pub/Sub message delivery
+- Geospatial accuracy and performance
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - This project implements the Redis server as described in the [CodeCrafters "Build Your Own Redis" challenge](https://codecrafters.io/challenges/redis)
 - Thanks to the Redis team for creating such an elegant and well-documented protocol
 
-## 📚 Learning Resources
+## Learning Resources
 
 - [Redis Protocol Specification](https://redis.io/docs/reference/protocol-spec/)
 - [Redis Commands Reference](https://redis.io/commands/)
 - [CodeCrafters Redis Challenge](https://codecrafters.io/challenges/redis)
 - [Java Virtual Threads Documentation](https://openjdk.org/jeps/444)
+- [Redis Geospatial Commands](https://redis.io/commands/?group=geo)
+- [Geohash Algorithm](https://en.wikipedia.org/wiki/Geohash)
+- [Haversine Formula](https://en.wikipedia.org/wiki/Haversine_formula)
