@@ -120,6 +120,22 @@ The Redis server processes client requests through several stages:
     - **Pub/Sub:** Channel subscriptions and message routing
     - **Transactions:** Queued commands for atomic execution
 
+## Performance Benchmarks
+
+All benchmarks were run on an Intel Core i3-1115G4 (2 cores / 4 threads, base 3.00 GHz, turbo 4.10 GHz, 6 MB L3 cache), 12 GB RAM, Ubuntu Linux, using Java 23 and Go 1.24.0. Each run executed 200 k operations via `redis-benchmark -n 200000 -c 50 --threads 4` after a 30-second warm-up.
+
+| Operation | Java Implementation          | Go Implementation              | Redis 7.x                      | Ratio (Java) | Ratio (Go) |
+| --------- | ---------------------------- | ------------------------------ | ------------------------------ | ------------ | ---------- |
+| GET       | 1,192 ops/sec (p50 0.303 ms) | 132,803 ops/sec (p50 0.119 ms) | 132,978 ops/sec (p50 0.327 ms) | 0.9%         | 99.87%     |
+| SET       | 1,191 ops/sec (p50 0.303 ms) | 133,067 ops/sec (p50 0.143 ms) | 133,244 ops/sec (p50 0.335 ms) | 0.9%         | 99.87%     |
+| LPUSH     | 1,191 ops/sec (p50 0.295 ms) | 4,329 ops/sec (p50 10.271 ms)  | 133,067 ops/sec (p50 0.343 ms) | 0.9%         | 3.23%      |
+| ZADD      | 1,193 ops/sec (p50 0.351 ms) | —                              | 133,156 ops/sec (p50 0.343 ms) | 0.9%         | —          |
+
+### Analysis (In Progress)
+
+- Currently gathering profiling data to pinpoint performance bottlenecks in the Java implementation.
+- Planned areas of investigation: RESP serialization overhead, locking granularity, and JVM tuning.
+
 ## How to Set Up and Run
 
 ### Prerequisites
