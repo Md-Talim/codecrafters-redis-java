@@ -31,18 +31,17 @@ public class Storage {
     }
 
     public RValue get(String key) {
-        var expiry = map.computeIfPresent(key, (_, value) -> {
-            if (value.isExpired()) {
-                return null;
-            }
-            return value;
-        });
-
-        if (expiry != null) {
-            return expiry.value();
+        var entry = map.get(key);
+        if (entry == null) {
+            return null;
         }
 
-        return null;
+        if (entry.isExpired()) {
+            map.remove(key, entry);
+            return null;
+        }
+
+        return entry.value();
     }
 
     public List<String> keys() {

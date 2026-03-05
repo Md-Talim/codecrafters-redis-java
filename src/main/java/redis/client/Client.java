@@ -54,7 +54,6 @@ public class Client implements Runnable {
     @Override
     public void run() {
         connected = true;
-        System.out.println("%d: connected".formatted(id));
 
         try (socket) {
             final var deserializer = new Deserializer(inputStream);
@@ -70,7 +69,6 @@ public class Client implements Runnable {
                 long read = inputStream.count();
                 var response = evaluator.evaluate(this, request, read);
                 if (response == null) {
-                    System.out.println("%d: no answer".formatted(id));
                     continue;
                 }
 
@@ -90,10 +88,6 @@ public class Client implements Runnable {
                     continue;
                 }
 
-                System.out.println(
-                    "%d: send command: %s".formatted(id, command)
-                );
-
                 outputStream.write(command.value().serialize());
                 outputStream.flush();
 
@@ -102,21 +96,15 @@ public class Client implements Runnable {
                     command.value() instanceof EmptyRDBFile
                 ) {
                     offset = 0;
-                    System.out.println("%d: reset offset".formatted(id));
                 } else {
                     offset += outputStream.count();
-                    System.out.println("%d: offset: %d".formatted(id, offset));
                 }
             }
         } catch (IOException e) {
-            System.out.println(
-                "%d: returned an error: %s".formatted(id, e.getMessage())
-            );
+            // Connection closed or error - expected during shutdown
         } catch (InterruptedException e) {
-            System.err.println(e.getMessage());
+            Thread.currentThread().interrupt();
         }
-
-        System.out.println("%d: connected".formatted(id));
 
         synchronized (this) {
             connected = false;
@@ -134,9 +122,6 @@ public class Client implements Runnable {
         boolean inserted = pendingCommands.offer(pendingCommand);
 
         if (!inserted) {
-            System.out.println(
-                "%d: retry queue command: %s".formatted(id, pendingCommand)
-            );
             pendingCommands.add(pendingCommand);
         }
     }

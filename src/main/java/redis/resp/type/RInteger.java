@@ -1,8 +1,5 @@
 package redis.resp.type;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
 public class RInteger implements RValue {
 
     private final String value;
@@ -13,15 +10,18 @@ public class RInteger implements RValue {
 
     @Override
     public byte[] serialize() {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        baos.write(FirstByte.Integer);
-        try {
-            baos.write(value.getBytes());
-            baos.write(CRLF.getBytes());
-        } catch (IOException e) {
-            throw new RuntimeException("Error serializing integer", e);
-        }
-        return baos.toByteArray();
+        byte[] valueBytes = value.getBytes();
+
+        // :<value>\r\n
+        int resultLen = 1 + valueBytes.length + 2;
+        byte[] result = new byte[resultLen];
+
+        result[0] = COLON;
+        System.arraycopy(valueBytes, 0, result, 1, valueBytes.length);
+        result[resultLen - 2] = CR;
+        result[resultLen - 1] = LF;
+
+        return result;
     }
 
     @Override

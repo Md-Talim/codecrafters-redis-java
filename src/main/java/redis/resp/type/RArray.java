@@ -1,7 +1,5 @@
 package redis.resp.type;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.List;
 
 public class RArray implements RValue {
@@ -60,17 +58,32 @@ public class RArray implements RValue {
 
     @Override
     public byte[] serialize() {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        baos.write(FirstByte.Array);
-        try {
-            baos.write(String.valueOf(items.size()).getBytes());
-            baos.write(CRLF.getBytes());
-            for (RValue item : items) {
-                baos.write(item.serialize());
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Error serializing array", e);
+        byte[][] parts = new byte[items.size()][];
+
+        int totalLen = 0;
+        for (int i = 0; i < items.size(); i++) {
+            parts[i] = items.get(i).serialize();
+            totalLen += parts[i].length;
         }
-        return baos.toByteArray();
+
+        byte[] sizeBytes = Integer.toString(items.size()).getBytes();
+
+        // *<count>\r\n<parts...>
+        int resultLen = 1 + sizeBytes.length + 2 + totalLen;
+        byte[] result = new byte[resultLen];
+
+        int pos = 0;
+        result[pos++] = STAR;
+        System.arraycopy(sizeBytes, 0, result, pos, sizeBytes.length);
+        pos += sizeBytes.length;
+        result[pos++] = CR;
+        result[pos++] = LF;
+
+        for (byte[] part : parts) {
+            System.arraycopy(part, 0, result, pos, part.length);
+            pos += part.length;
+        }
+
+        return result;
     }
 }

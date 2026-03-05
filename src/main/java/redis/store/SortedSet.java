@@ -37,9 +37,6 @@ public class SortedSet {
         memberScores.put(member, score);
         scoreToMembers.computeIfAbsent(score, _ -> new TreeSet<>()).add(member);
 
-        System.out.println(memberScores);
-        System.out.println(scoreToMembers);
-
         return oldScore == null; // true if new member added
     }
 

@@ -83,8 +83,7 @@ public class Redis {
                 new SimpleError("ERR command must be in an array")
             );
         } finally {
-            var offset = replicationOffset.addAndGet(read);
-            System.out.println("offset: %s".formatted(offset));
+            replicationOffset.addAndGet(read);
         }
     }
 

@@ -1,8 +1,8 @@
 package redis.resp.type;
 
-import java.io.ByteArrayOutputStream;
-
 public class BulkString implements RValue {
+
+    private static final byte[] NULL_BULK_STRING = "$-1\r\n".getBytes();
 
     private final String value;
 
@@ -26,26 +26,27 @@ public class BulkString implements RValue {
     @Override
     public byte[] serialize() {
         if (value == null) {
-            return nullBulkString();
+            return NULL_BULK_STRING;
         }
 
         byte[] valueBytes = value.getBytes();
-        String header =
-            FirstByte.BulkString + Integer.toString(valueBytes.length) + CRLF;
-        byte[] headerBytes = header.getBytes();
+        byte[] lengthBytes = Integer.toString(valueBytes.length).getBytes();
 
-        ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
-        try {
-            out.write(headerBytes);
-            out.write(valueBytes);
-            out.write(CRLF.getBytes());
-        } catch (java.io.IOException e) {
-            throw new RuntimeException(e);
-        }
-        return out.toByteArray();
-    }
+        // $<length>\r\n<value>\r\n
+        int resultLength = 1 + lengthBytes.length + 2 + valueBytes.length + 2;
+        byte[] result = new byte[resultLength];
 
-    private byte[] nullBulkString() {
-        return (FirstByte.BulkString + "-1" + CRLF).getBytes();
+        int pos = 0;
+        result[pos++] = DOLLAR;
+        System.arraycopy(lengthBytes, 0, result, pos, lengthBytes.length);
+        pos += lengthBytes.length;
+        result[pos++] = CR;
+        result[pos++] = LF;
+        System.arraycopy(valueBytes, 0, result, pos, valueBytes.length);
+        pos += valueBytes.length;
+        result[pos++] = CR;
+        result[pos++] = LF;
+
+        return result;
     }
 }

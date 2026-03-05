@@ -86,7 +86,6 @@ public class Main {
                 final var client = new Client(socket, redis);
                 final var thread = threadFactory.newThread(client);
                 thread.start();
-                Thread.sleep(100l);
             }
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
