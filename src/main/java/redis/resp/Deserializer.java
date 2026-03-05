@@ -32,9 +32,7 @@ public class Deserializer {
             case FirstByte.Array -> readArray();
             case FirstByte.SimpleString -> readSimpleString();
             case FirstByte.BulkString -> readBulkString();
-            default -> throw new IllegalArgumentException(
-                "Unexpected value: " + firstByte
-            );
+            default -> readInlineCommand(firstByte);
         };
     }
 
@@ -45,6 +43,28 @@ public class Deserializer {
         }
         int length = parseUnsignedInt();
         return inputStream.readNBytes(length);
+    }
+
+    private RArray readInlineCommand(int firstByte) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        sb.append((char) firstByte);
+
+        int b;
+        while ((b = inputStream.read()) != -1) {
+            if (b == '\r') {
+                inputStream.read();
+                break;
+            }
+            sb.append((char) b);
+        }
+
+        String[] parts = sb.toString().split(" ");
+        List<RValue> args = new ArrayList<>();
+        for (String part : parts) {
+            args.add(new BulkString(part));
+        }
+
+        return new RArray(args);
     }
 
     private RArray readArray() throws IOException {
