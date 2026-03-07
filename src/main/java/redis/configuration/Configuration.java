@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Configuration {
-    private final Option port = new Option("port", List.of(new PortArgument(6379)));
+    private final Option port = new Option("port", List.of(new PortArgument(6380)));
     private final PathOption directory = new PathOption("dir");
     private final PathOption databaseFilename = new PathOption("dbfilename");
     private final RemoteOption replicaOf = new RemoteOption("replicaof");

@@ -136,14 +136,14 @@ git clone https://github.com/Md-Talim/codecrafters-redis-java.git
 cd codecrafters-redis-java
 mvn compile
 
-# Run (default port 6379)
-./your_program.sh
+# Run (default port 6380)
+./my_redis.sh
 
 # Run on custom port with RDB persistence
-./your_program.sh --port 6380 --dir /tmp --dbfilename dump.rdb
+./my_redis.sh --port 6381 --dir /tmp --dbfilename dump.rdb
 
 # Run as replica
-./your_program.sh --port 6381 --replicaof "localhost 6380"
+./my_redis.sh --port 6382 --replicaof "localhost 6381"
 ```
 
 Connect with any standard Redis client:
