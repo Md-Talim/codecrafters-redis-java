@@ -1,0 +1,35 @@
+services:
+    master:
+        build: .
+        ports:
+            - "6380:6380"
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "sh",
+                    "-c",
+                    "printf 'PING\\r\n' | nc -w 1 localhost 6380",
+                ]
+            interval: 2s
+            timeout: 3s
+            retries: 5
+            start_period: 10s
+
+    replica1:
+        build: .
+        ports:
+            - "6381:6380"
+        command: ["--port", "6380", "--replicaof", "master 6380"]
+        depends_on:
+            master:
+                condition: service_healthy
+
+    replica2:
+        build: .
+        ports:
+            - "6382:6380"
+        command: ["--port", "6380", "--replicaof", "master 6380"]
+        depends_on:
+            master:
+                condition: service_healthy

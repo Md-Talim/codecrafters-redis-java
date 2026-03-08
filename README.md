@@ -152,6 +152,33 @@ Connect with any standard Redis client:
 redis-cli -p 6380
 ```
 
+### Docker — One-Command Replication Demo
+
+Spin up a master with two replicas:
+
+```sh
+docker compose up --build
+```
+
+This starts three containers on a shared network:
+
+| Service    | Host Port | Role    |
+| ---------- | --------- | ------- |
+| `master`   | 6380      | Master  |
+| `replica1` | 6381      | Replica |
+| `replica2` | 6382      | Replica |
+
+```sh
+redis-cli -p 6380 SET hello world    # write to master
+redis-cli -p 6381 GET hello          # read from replica → "world"
+redis-cli -p 6382 GET hello          # read from replica → "world"
+redis-cli -p 6380 WAIT 2 5000       # confirm 2 replicas acknowledged → (integer) 2
+```
+
+```sh
+docker compose down                  # tear down
+```
+
 ## Project Structure
 
 ```
