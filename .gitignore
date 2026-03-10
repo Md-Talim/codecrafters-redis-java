@@ -5,3 +5,4 @@ target/
 .settings/
 .project
 .classpath
+cpu_flamegraph.html

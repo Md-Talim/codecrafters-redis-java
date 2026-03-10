@@ -92,7 +92,7 @@ GET: 84,495 req/s p50 = 0.295 ms
 - **`ByteArrayOutputStream` allocations** in RESP serialization → replaced with pre-sized `byte[]` + `System.arraycopy` (**reduced GC pressure**)
 - **String concatenation** in protocol encoding → eliminated intermediate `String` objects
 
-Flame graphs: [`before`](results/before/cpu_flamegraph.html) · [`after`](results/after/cpu_flamegraph.html)
+Flame graphs: [`before`](results/before/cpu_flamegraph.png) · [`after`](results/after/cpu_flamegraph.png)
 
 ## Key Engineering Decisions
 
