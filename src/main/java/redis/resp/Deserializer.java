@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import redis.resp.type.BulkString;
-import redis.resp.type.FirstByte;
 import redis.resp.type.RArray;
 import redis.resp.type.RValue;
 import redis.resp.type.SimpleString;
@@ -29,16 +28,16 @@ public class Deserializer {
         }
 
         return switch (firstByte) {
-            case FirstByte.Array -> readArray();
-            case FirstByte.SimpleString -> readSimpleString();
-            case FirstByte.BulkString -> readBulkString();
+            case RValue.STAR -> readArray();
+            case RValue.PLUS -> readSimpleString();
+            case RValue.DOLLAR -> readBulkString();
             default -> readInlineCommand(firstByte);
         };
     }
 
     public byte[] readRDB() throws IOException {
         int firtByte = inputStream.read();
-        if (firtByte != FirstByte.BulkString) {
+        if (firtByte != RValue.DOLLAR) {
             throw new IOException("Expected bulk string for RDB file");
         }
         int length = parseUnsignedInt();
