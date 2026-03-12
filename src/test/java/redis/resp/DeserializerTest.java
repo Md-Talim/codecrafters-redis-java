@@ -56,17 +56,37 @@ class DeserializerTest {
         var result = deserializer("*2\r\n$3\r\nGET\r\n$3\r\nfoo\r\n").read();
 
         assertThat(result).isInstanceOf(RArray.class);
+
         var array = (RArray) result;
         assertThat(array.size()).isEqualTo(2);
+        assertThat(array.get(0).toString()).isEqualTo("GET");
+        assertThat(array.get(1).toString()).isEqualTo("foo");
     }
 
     @Test
     void parseInlineCommand() throws Exception {
-        var result = deserializer("PING\r\n").read();
+        var result = deserializer("PING hello\r\n").read();
 
         assertThat(result).isInstanceOf(RArray.class);
+
         var array = (RArray) result;
-        assertThat(array.getCommandName()).isEqualToIgnoringCase("PING");
+        assertThat(array.size()).isEqualTo(2);
+        assertThat(array.get(0).toString()).isEqualTo("PING");
+        assertThat(array.get(1).toString()).isEqualTo("hello");
+    }
+
+    @Test
+    void parseNestedArray() throws Exception {
+        var result = deserializer("*2\r\n*1\r\n$3\r\nfoo\r\n$3\r\nbar\r\n").read();
+
+        var outer = (RArray) result;
+        assertThat(outer.size()).isEqualTo(2);
+
+        var inner = (RArray) outer.get(0);
+        assertThat(inner.size()).isEqualTo(1);
+
+        assertThat(inner.get(0).toString()).isEqualTo("foo");
+        assertThat(outer.get(1).toString()).isEqualTo("bar");
     }
 
     @Test
