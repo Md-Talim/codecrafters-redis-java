@@ -36,8 +36,8 @@ public class Deserializer {
     }
 
     public byte[] readRDB() throws IOException {
-        int firtByte = inputStream.read();
-        if (firtByte != RValue.DOLLAR) {
+        int firstByte = inputStream.read();
+        if (firstByte != RValue.DOLLAR) {
             throw new IOException("Expected bulk string for RDB file");
         }
         int length = parseUnsignedInt();
@@ -51,7 +51,7 @@ public class Deserializer {
         int b;
         while ((b = inputStream.read()) != -1) {
             if (b == '\r') {
-                inputStream.read();
+                consumeLF();
                 break;
             }
             sb.append((char) b);
@@ -91,8 +91,7 @@ public class Deserializer {
 
         byte[] bytes = new byte[length];
         inputStream.readNBytes(bytes, 0, length);
-        inputStream.read(); // consume \r
-        inputStream.read(); // consume \n
+        consumeCRLF();
 
         return new BulkString(new String(bytes));
     }
@@ -110,11 +109,27 @@ public class Deserializer {
         int b;
         while ((b = inputStream.read()) != -1) {
             if (b == '\r') {
-                inputStream.read(); // consume \n
+                consumeLF();
                 break;
             }
             sb.append((char) b);
         }
         return sb.toString();
+    }
+
+    private void consumeCRLF() throws IOException {
+        int cr = inputStream.read();
+        if (cr != '\r') {
+            throw new IOException("Expected \\r, got " + (cr == -1 ? "EOF" : "'" + (char) cr + "'"));
+        }
+
+        consumeLF();
+    }
+
+    private void consumeLF() throws IOException {
+        int lf = inputStream.read();
+        if (lf != '\n') {
+            throw new IOException("Expected \\n after \\r, got " + (lf == -1 ? "EOF" : "'" + (char) lf + "'"));
+        }
     }
 }

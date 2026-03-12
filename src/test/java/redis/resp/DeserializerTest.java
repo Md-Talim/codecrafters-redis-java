@@ -1,8 +1,10 @@
 package redis.resp;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 import redis.resp.type.BulkString;
@@ -70,5 +72,19 @@ class DeserializerTest {
     @Test
     void returnsNullOnEmptyStream() throws Exception {
         assertThat(deserializer("").read()).isNull();
+    }
+
+    @Test
+    void parseBulkStringMissingCRLF() {
+        assertThatThrownBy(() -> deserializer("$5\r\nhello").read())
+            .isInstanceOf(IOException.class)
+            .hasMessageContaining("Expected \\r");
+    }
+
+    @Test
+    void parseBulkStringMissingLF() {
+        assertThatThrownBy(() -> deserializer("$5\r\nhello\r").read())
+            .isInstanceOf(IOException.class)
+            .hasMessageContaining("Expected \\n after \\r");
     }
 }
