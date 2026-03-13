@@ -21,6 +21,12 @@ class SortedSetTest {
 
     @Test
     void addReturnsFalseForExistingMember() {
+        assertThat(set.add("alice", 1.0)).isTrue();
+        assertThat(set.add("alice", 1.0)).isFalse();
+    }
+
+    @Test
+    void addReturnsFalseWhenUpdatingExistingMemberScore() {
         set.add("alice", 1.0);
         assertThat(set.add("alice", 2.0)).isFalse();
     }
@@ -55,6 +61,11 @@ class SortedSetTest {
         assertThat(set.remove("alice")).isTrue();
         assertThat(set.rank("alice")).isEqualTo(-1);
         assertThat(set.size()).isEqualTo(0);
+    }
+
+    @Test
+    void removeMissingMemberReturnsFalse() {
+        assertThat(set.remove("nonexistent")).isFalse();
     }
 
     @Test
