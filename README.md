@@ -1,5 +1,7 @@
 [![progress-banner](https://backend.codecrafters.io/progress/redis/a14b4bba-5598-4db4-90bf-0e60a6bf2499)](https://app.codecrafters.io/users/Md-Talim?r=2qF)
 
+[![CI](https://github.com/Md-Talim/codecrafters-redis-java/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/Md-Talim/codecrafters-redis-java/actions/workflows/ci.yml)
+
 # Redis — Built from Scratch in Java
 
 A from-scratch implementation of Redis in Java — RESP protocol, 6 data structures, master-slave replication, pub/sub, transactions, streams, geospatial queries, and RDB persistence. No libraries. No frameworks. Just `java.net` and `java.util.concurrent`.
