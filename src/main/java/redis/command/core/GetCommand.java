@@ -29,13 +29,15 @@ public class GetCommand implements Command {
         String key = args.get(0).toString();
         RValue value = storage.get(key);
 
-        if (!(value instanceof BulkString)) {
+        if (value == null) {
+            return new CommandResponse(new BulkString(null));
+        }
+
+        if (!(value instanceof BulkString bulk)) {
             return new CommandResponse(SimpleErrors.WRONG_TYPE_OPERATION);
         }
 
-        return new CommandResponse(
-            new BulkString(value == null ? null : value.toString())
-        );
+        return new CommandResponse(new BulkString(bulk.getValue()));
     }
 
     @Override
