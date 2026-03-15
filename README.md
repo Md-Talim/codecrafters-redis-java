@@ -154,6 +154,14 @@ Connect with any standard Redis client:
 redis-cli -p 6380
 ```
 
+### Tests & CI
+
+```sh
+mvn test
+```
+
+CI runs the same test suite on every push/PR via GitHub Actions (see `.github/workflows/ci.yml`).
+
 ### Docker — One-Command Replication Demo
 
 Spin up a master with two replicas:
